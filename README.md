@@ -5,7 +5,7 @@ Open Guest Compute Service (OpenGCS) is an open source project to further the de
 
 # Getting Started
 
-  [How to build GCS binaries](https://github.com/Microsoft/opengcs/gcsbuildinstructions.md/)
+  [How to build GCS binaries](https://github.com/Microsoft/opengcs/docs/gcsbuildinstructions.md/)
 
 # Contributing
 
