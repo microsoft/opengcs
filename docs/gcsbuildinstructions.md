@@ -6,7 +6,7 @@
 
       // Downlad the latest Golang 
       ~$ sudo curl -O https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
-      ~$ tar -xvf go1.6.linux-amd64.tar.gz
+      ~$ tar -xvf go1.8.3.linux-amd64.tar.gz
 
      // setup GO environment variables
      //add the following settings into ~/.profile before sourcing it
