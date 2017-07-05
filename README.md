@@ -3,6 +3,9 @@
 
 Open Guest Compute Service (OpenGCS) is an open source project to further the development of a production quality implementation of Linux Hyper-V container on Windows. 
 
+Getting Started
+
+How to build GCS binarie [How to build GCS binaries](https://github.com/Microsoft/opengcs/gcsbuildinstructions/)
 
 # Contributing
 
