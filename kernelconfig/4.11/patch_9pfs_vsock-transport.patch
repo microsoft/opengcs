@@ -3,6 +3,8 @@ From: Cheng-mean Liu <soccerl@microsoft.com>
 Date: Tue, 27 Jun 2017 20:04:44 -0700
 Subject: [PATCH] Added vsock transport support to 9pfs
 
+Signed-off-by: Cheng-mean Liu <soccerl@microsoft.com>
+
 ---
  net/9p/trans_fd.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 76 insertions(+), 1 deletion(-)
