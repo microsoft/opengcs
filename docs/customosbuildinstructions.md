@@ -52,7 +52,7 @@ Here are the expected contents of each subdirectory /file
          /root/integration/prebuildSandbox.vhdx
 
 4. **/sbin** : 
-        /sbin/runc  
+    - /sbin/runc  
 
               Note:this is the "runc" binary for hosting the container execution environment. 
               It needs to be the following release
@@ -60,7 +60,7 @@ Here are the expected contents of each subdirectory /file
               commit: 992a5be178a62e026f4069f443c6164912adbf09
               spec: 1.0.0-rc5
 
-    /sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
+    - /sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
     
 5. **/lib64** :
 
@@ -83,7 +83,7 @@ Here are the expected contents of each subdirectory /file
 
 7. **/bin** : binaries in this subdir are categorised into three groups
         
-- [GCS binaries](gcsbuildinstructions.md/)
+    - [GCS binaries](gcsbuildinstructions.md/)
 
             /bin/gcs
             /bin/gcstools
@@ -92,7 +92,7 @@ Here are the expected contents of each subdirectory /file
             /bin/exportSandbox
             /bin/createSandbox
 
-- Required binaires: utilities used by gcs
+    - Required binaires: utilities used by gcs
 
              /bin/sh
              /bin/mkfs.ext4
@@ -106,7 +106,7 @@ Here are the expected contents of each subdirectory /file
              /bin/iproute
              /bin/hostname
 
-- Debugging tools: mostly from busybox tool set
+    - Debugging tools: mostly from busybox tool set
        
 
 # Supported LCOW custom Linux OS packaging formats
