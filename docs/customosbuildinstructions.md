@@ -60,12 +60,15 @@ Here are the expected contents of each subdirectory /file
                           commit: 992a5be178a62e026f4069f443c6164912adbf09
                           spec: 1.0.0-rc5
 
-        /sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
+    /sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
     
 5. **/lib64** :
+
        /lib64/ld-linux-x86-64.so.2
 
+```
 6. **/lib** : 
+
        /lib/x86_64-linux-gnu
        /lib/x86_64-linux-gnu/libe2p.so.2
        /lib/x86_64-linux-gnu/libcom_err.so.2
@@ -78,10 +81,13 @@ Here are the expected contents of each subdirectory /file
        /lib/x86_64-linux-gnu/libext2fs.so.2
        /lib/x86_64-linux-gnu/libuuid.so.1
        /lib/modules
+```
 
-7. **/bin** : key LCOW binaries stored in this directories
+
+7. **/bin** : binaries in this subdir are categorised into three groups
         
-- GCS binaries built from [here](./docs/gcsbuildinstructions.md/)
+- [GCS binaries](./docs/gcsbuildinstructions.md/)
+
             /bin/gcs
             /bin/gcstools
             /bin/vhd2tar
@@ -89,7 +95,7 @@ Here are the expected contents of each subdirectory /file
             /bin/exportSandbox
             /bin/createSandbox
 
-- required binaires
+- required binaires: utilties used by gcs
 
              /bin/sh
              /bin/mkfs.ext4
@@ -103,10 +109,10 @@ Here are the expected contents of each subdirectory /file
              /bin/iproute
              /bin/hostname
 
-- debugging tools
+- debugging tools: mostly from busybox tool set
 
-       [See complete user-mode file list](./kernelconfig/4.11/completeUsermodeFileLists.md/)
-        
+[See complete user-mode file list](./kernelconfig/4.11/completeUsermodeFileLists.md/)
+       
 
 # Supported LCOW custom Linux OS packaing formats
 
