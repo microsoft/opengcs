@@ -5,7 +5,7 @@
 A LCOW custom Linx OS image was devided into two parts: a Linux kernel module and a set of user-mode componments. Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
 
 
-# How to build custom kernel module
+## How to build custom kernel module
 
     In your 4.11 kernel source tree:
 
@@ -20,7 +20,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
     Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules
          The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image. 
 
-# How to construct user-mode components
+## How to construct user-mode components
 
     Under the / directory, the following directory structure is required:
 
