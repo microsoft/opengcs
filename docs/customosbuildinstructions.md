@@ -17,11 +17,11 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
 
     Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules.
-           The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image.  
+           The Kconfig above is still a work in process in terms of trimming any unnecessary components from the kernel image.  
 
 ## How to construct user-mode components
 
-THe expected user mode directory structure is required to constructed as follows: [See complete user-mode file list](../kernelconfig/4.11/completeUsermodeFileLists.md/)
+THe expected user mode directory structure is required to constructed as follows: [See the complete user-mode file list](../kernelconfig/4.11/completeUsermodeFileLists.md/)
 
 Under the / directory, it should have the following subdirectories:
 
