@@ -1,7 +1,7 @@
 
 # Open Guest Compute Service (opengcs)
 
-Open Guest Compute Service is an Linux open source project to further the development of a production quality implementation of Linux Hyper-V container on Windows. 
+Open Guest Compute Service is an Linux open source project to further the development of a production quality implementation of Linux Hyper-V container on Windows.  It's designed to be packaged inside a custom Linux OS image for supporting Linux container payload'
 
 # Getting Started
 
