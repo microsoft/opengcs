@@ -7,20 +7,17 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
 ## How to build custom kernel module
 
-    In your 4.11 kernel source tree:
+- Have your 4.11 kernel source tree ready
 
-        Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
+- Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
 
-        [linuxkit/homebrew-linuxkit](https://github.com/linuxkit/homebrew-linuxkit),
+- Use the recommended [Kconfig](../kernelconfig/4.11/kconfig_for_4_11/) to include all LCOW necessary kernel componments
 
-        [How to build GCS binaries](./gcsbuildinstructions.md/)
-
-        Use the recommended [Kconfig](../kernelconfig/4.11/kconfig_for_4_11/) to build a 4.11 kernel that includes all LCOW necessary kernel componments.
-        Build your kernel 
+- Build your kernel 
 
 
     Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules
-         The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image. 
+         The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image.  
 
 ## How to construct user-mode components
 
@@ -32,31 +29,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
      
      1. Some of the subdirectories start with empty contents:  here they are: tmp proc dev run etc usr mnt sys 
 
-     2. /init  ;  the init script file, which has the following contents
-
-                #!/bin/sh
-                export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-                # Configure everything before running GCS
-                # Set up mounts
-                mount -t proc proc /proc
-                mount -t sysfs sysfs /sys
-                mount -t devtmpfs udev /dev
-                mount -t tmpfs tmpfs /run
-                mount -t cgroup cgroup /sys/fs/cgroup
-
-                mkdir /dev/mqueue
-                mount -t mqueue mqueue /dev/mqueue
-                mkdir /dev/pts
-                mount -t devpts devpts /dev/pts
-                mkdir /dev/shm
-                mount -t tmpfs shm /dev/shm
-
-                # Run gcs in the background
-                cd /bin
-                ./gcs  -loglevel=verbose -logfile=/tmp/gcslog.txt &
-                cd -
-                sh
+     2. /init  ;  the init script file, [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
 
 
      3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
@@ -172,6 +145,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
              /bin/sh
              /bin/mkfs.ext4
+             /bin/remotefs
              /bin/blockdev
              /bin/mkdir
              /bin/rmdir
@@ -184,6 +158,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
         // debugging tools
 
         [See complete user-mode file list](./kernelconfig/4.11/completeUsermodeFileLists.md/)
+        
 
 # Supported LCOW custom Linux OS packaing formats
 
