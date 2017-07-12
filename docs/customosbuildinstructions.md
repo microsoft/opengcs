@@ -21,7 +21,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
 ## How to construct user-mode components
 
-THe expected user mode directory structure is required to constructed as follows:
+THe expected user mode directory structure is required to constructed as follows: [See complete user-mode file list](../kernelconfig/4.11/completeUsermodeFileLists.md/)
 
 Under the / directory, it should have the following subdirectories:
 
@@ -54,11 +54,11 @@ Here are the expected contents of each subdirectory /file
 4. **/sbin** : 
         /sbin/runc  
 
-                  Note:this is the "runc" binary for hosting the container execution environment. 
-                  It needs to be the following release
-                          runc version 1.0.0-rc3
-                          commit: 992a5be178a62e026f4069f443c6164912adbf09
-                          spec: 1.0.0-rc5
+              Note:this is the "runc" binary for hosting the container execution environment. 
+              It needs to be the following release
+              runc version 1.0.0-rc3
+              commit: 992a5be178a62e026f4069f443c6164912adbf09
+              spec: 1.0.0-rc5
 
     /sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
     
@@ -66,7 +66,6 @@ Here are the expected contents of each subdirectory /file
 
        /lib64/ld-linux-x86-64.so.2
 
-```
 6. **/lib** : 
 
        /lib/x86_64-linux-gnu
@@ -81,8 +80,6 @@ Here are the expected contents of each subdirectory /file
        /lib/x86_64-linux-gnu/libext2fs.so.2
        /lib/x86_64-linux-gnu/libuuid.so.1
        /lib/modules
-```
-
 
 7. **/bin** : binaries in this subdir are categorised into three groups
         
@@ -95,7 +92,7 @@ Here are the expected contents of each subdirectory /file
             /bin/exportSandbox
             /bin/createSandbox
 
-- required binaires: utilties used by gcs
+- Required binaires: utilties used by gcs
 
              /bin/sh
              /bin/mkfs.ext4
@@ -109,14 +106,12 @@ Here are the expected contents of each subdirectory /file
              /bin/iproute
              /bin/hostname
 
-- debugging tools: mostly from busybox tool set
-
-[See complete user-mode file list](./kernelconfig/4.11/completeUsermodeFileLists.md/)
+- Debugging tools: mostly from busybox tool set
        
 
 # Supported LCOW custom Linux OS packaing formats
 
-    A LCOW custom Linux OS could be packaged into two different formats: 
+    A LCOW custom Linux OS could be packaged into two different supported formats: 
 
     Kernel + Initrd: vmlinuz and initrd.img
     VHD: a VHDx file
