@@ -29,7 +29,8 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
      
      1. Some of the subdirectories start with empty contents:  here they are: tmp proc dev run etc usr mnt sys 
 
-     2. /init  ;  the init script file, [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
+     2. /init  ;  the init script file, 
+        [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
 
 
      3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
