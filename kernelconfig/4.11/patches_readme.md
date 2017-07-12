@@ -1,5 +1,5 @@
 
-# Patch list for for a LCOW 4.11 custom Linux OS image
+# Patch list for a LCOW 4.11 custom Linux OS image
 
 
 - [9pfs: added vsock transport support patch](./patch_9pfs_vsock-transport.patch)
@@ -8,8 +8,5 @@
 
 - [vmw_vsock: added Hyper-v transport](./patch_hyperv_vsock_patch_instruction.txt)
 
-
-Assuming you have 4.11 kernel, apply all the patch files, starting with patch_*. 
-There are either the patch file themselves or instructions on how to get the patches.
 
 

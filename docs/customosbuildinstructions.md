@@ -21,24 +21,36 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
 ## How to construct user-mode components
 
-    Under the / directory, the following directory structure is required:
+Under the / directory, the following directory structure is required:
 
-    tmp proc bin dev run etc usr mnt sys    init root sbin lib64 lib      
+- /tmp 
+- /proc 
+- /bin 
+- /dev 
+- /run 
+- /etc 
+- /usr 
+- /mnt 
+- /sys    
 
-    Here are the expected contents of each subdirectory /file
+- /init 
+- /root 
+- /sbin 
+- /lib64 
+- /lib      
+
+Here are the expected contents of each subdirectory /file
      
-     1. Some of the subdirectories start with empty contents:  here they are: tmp proc dev run etc usr mnt sys 
+1. subdirectories with empty contents:  /tmp /proc /dev /run /etc /usr /mnt /sys 
 
-     2. /init  ;  the init script file, 
-        [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
+2. /init  ;  the init script file, [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
+   
 
-
-     3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
+3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
         
         /root/integration/prebuildSandbox.vhdx
 
-
-     4./sbin : 
+4./sbin : 
         /sbin/runc  
 
         Note:this is the "runc" binary for hosting the container execution environment. 
@@ -112,13 +124,10 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
                                     ;;
                     esac
                     exit 0
-
-
-
-     5./lib64 :
+5./lib64 :
        /lib64/ld-linux-x86-64.so.2
 
-     6./lib : 
+6./lib : 
        /lib/x86_64-linux-gnu
        /lib/x86_64-linux-gnu/libe2p.so.2
        /lib/x86_64-linux-gnu/libcom_err.so.2
