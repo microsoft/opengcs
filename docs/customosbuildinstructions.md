@@ -45,12 +45,13 @@ Here are the expected contents of each subdirectory /file
      
 1. Subdirectories with empty contents:  /tmp /proc /dev /run /etc /usr /mnt /sys 
 
-2. /init  ;  the init script file, [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
+2. /init  
+   This is the init script file [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
 
-3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
+3. /root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
          /root/integration/prebuildSandbox.vhdx
 
-4./sbin : 
+4. /sbin : 
         /sbin/runc  
 
         Note:this is the "runc" binary for hosting the container execution environment. 
@@ -61,10 +62,10 @@ Here are the expected contents of each subdirectory /file
 
 /sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
     
-5./lib64 :
+5. /lib64 :
        /lib64/ld-linux-x86-64.so.2
 
-6./lib : 
+6. /lib : 
        /lib/x86_64-linux-gnu
        /lib/x86_64-linux-gnu/libe2p.so.2
        /lib/x86_64-linux-gnu/libcom_err.so.2
@@ -78,7 +79,7 @@ Here are the expected contents of each subdirectory /file
        /lib/x86_64-linux-gnu/libuuid.so.1
        /lib/modules
 
-7./bin : key LCOW binaries stored in this directories
+7. /bin : key LCOW binaries stored in this directories
         
 - GCS binaries built from [here](./docs/gcsbuildinstructions.md/)
             /bin/gcs
