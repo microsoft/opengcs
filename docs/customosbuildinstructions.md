@@ -21,7 +21,7 @@ A LCOW custom Linux OS image was divided into two parts: a Linux kernel module a
 
 ## How to construct user-mode components
 
-THe expected user mode directory structure is required to constructed as follows: [See the complete user-mode file list](../kernelconfig/4.11/completeUsermodeFileLists.md/)
+The expected user mode directory structure is required to constructed as follows: [See the complete user-mode file list](../kernelconfig/4.11/completeUsermodeFileLists.md/)
 
 Under the / directory, it should have the following subdirectories:
 
@@ -112,7 +112,6 @@ Here are the expected contents of each subdirectory /file
 # Supported LCOW custom Linux OS packaging formats
 
     A LCOW custom Linux OS could be packaged into two different supported formats: 
-
     Kernel + Initrd: vmlinuz and initrd.img
     VHD: a VHDx file
 
