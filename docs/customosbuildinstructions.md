@@ -2,7 +2,7 @@
 
 # How to produce a custom Linux OS image
 
-A LCOW custom Linx OS image was devided into two parts: a Linux kernel module and a set of user-mode componments. Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
+A LCOW custom Linx OS image was divided into two parts: a Linux kernel module and a set of user-mode componments. Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
 
 
 ## How to build custom kernel module
@@ -11,7 +11,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
 - Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
 
-- Use the recommended [Kconfig](../kernelconfig/4.11/kconfig_for_4_11/) to include all LCOW necessary kernel componments
+- Use the recommended [Kconfig](../kernelconfig/4.11/kconfig_for_4_11/) to include all LCOW necessary kernel components
 
 - Build your kernel 
 
@@ -83,7 +83,7 @@ Here are the expected contents of each subdirectory /file
 
 7. **/bin** : binaries in this subdir are categorised into three groups
         
-- [GCS binaries](./docs/gcsbuildinstructions.md/)
+- [GCS binaries](gcsbuildinstructions.md/)
 
             /bin/gcs
             /bin/gcstools
@@ -92,7 +92,7 @@ Here are the expected contents of each subdirectory /file
             /bin/exportSandbox
             /bin/createSandbox
 
-- Required binaires: utilties used by gcs
+- Required binaires: utilities used by gcs
 
              /bin/sh
              /bin/mkfs.ext4
@@ -109,7 +109,7 @@ Here are the expected contents of each subdirectory /file
 - Debugging tools: mostly from busybox tool set
        
 
-# Supported LCOW custom Linux OS packaing formats
+# Supported LCOW custom Linux OS packaging formats
 
     A LCOW custom Linux OS could be packaged into two different supported formats: 
 
