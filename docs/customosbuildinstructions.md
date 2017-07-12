@@ -1,19 +1,20 @@
 
 
-# Instructions on how to produce a custom Linux OS image for the Linux Hyper-V container on Windows (LCOW)
+# How to produce a custom Linux OS image
 
-A LCOW custom Linx OS image was devided into two parts: a Linux kernel module and a set of user-mode . Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
+A LCOW custom Linx OS image was devided into two parts: a Linux kernel module and a set of user-mode componments. Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
 
 
-# How to build custom kernel (vmlinuz)
+# How to build custom kernel module
 
     In your 4.11 kernel source tree:
-        Apply additional [4.11 patches](./kernelconfig/4.11/patches_readme.md/) to your 4.11 kernel source tree 
+
+        Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md/) to your 4.11 kernel source tree 
         Use the recommended [Kconfig](./kernelconfig/4.11/kconfig_for_4_11/) to build a 4.11 kernel that includes all LCOW necessary kernel componments.
         Build your kernel 
 
 
-    ps.  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules
+    Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules
          The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image. 
 
 # How to construct user-mode components
@@ -59,13 +60,83 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
 
      4./sbin : 
-        /sbin/runc  ; this is the only file in this subdirectory
+        /sbin/runc  
 
         Note:this is the "runc" binary for hosting the container execution environment. 
               It needs to be a version with the following release
               runc version 1.0.0-rc3
               commit: 992a5be178a62e026f4069f443c6164912adbf09
               spec: 1.0.0-rc5
+
+        /sbin/udhcpc_config.script  ; see below for it contents
+                             
+                    #!/bin/sh
+                    # udhcpc script edited by Tim Riker <Tim@Rikers.org>
+
+                    RESOLV_CONF="/etc/resolv.conf"
+
+                    # dump the contents of the /etc/resolv.conf"
+                    if [ -e $RESOLV_CONF ]; then
+                       echo "initial contents of $RESOLV_CONF: used to configure a sysmtem Domain Name System resolver"
+                       cat $RESOLV_CONF
+
+                    else
+                       echo "$RESOLV_CONF does not exist"
+                    fi
+
+                    [ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
+
+                    echo "Parameter 1: $1"
+
+                    NETMASK=""
+                    [ -n "$subnet" ] && NETMASK="netmask $subnet"
+                    BROADCAST="broadcast +"
+                    [ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+
+                    case "$1" in
+                            deconfig)
+                                    echo $1
+                                    echo "    Setting IP address 0.0.0.0 on $interface"
+                                    ifconfig $interface 0.0.0.0
+                                    ;;
+
+                            renew|bound)
+                                    echo $1
+                                    echo "    Setting IP address $ip on $interface"
+                                    ifconfig $interface $ip $NETMASK $BROADCAST
+                                    echo "router = [$router]"
+                                    if [ -n "$router" ] ; then
+                                            echo "Deleting routers"
+                                            while route del default gw 0.0.0.0 dev $interface ; do
+                                                    :
+                                            done
+
+                                            metric=0
+                                            for i in $router ; do
+                                                    echo "Adding router $i"
+                                                    route add default gw $i dev $interface metric $metric
+                                                    : $(( metric += 1 ))
+                                            done
+                                    fi
+
+                                    echo "Recreating $RESOLV_CONF"
+                                    # If the file is a symlink somewhere (like /etc/resolv.conf
+                                    # pointing to /run/resolv.conf), make sure things work.
+                                    realconf=$(readlink -f "$RESOLV_CONF" 2>/dev/null || echo "$RESOLV_CONF")
+                                    tmpfile="$realconf-$$"
+                                    > "$tmpfile"
+                                    echo "doamin=[$domain]"
+                                    [ -n "$domain" ] && echo "search $domain" >> "$tmpfile"
+                                    for i in $dns ; do
+                                            echo " Adding DNS server $i"
+                                            echo "nameserver $i" >> "$tmpfile"
+                                    done
+                                    mv "$tmpfile" "$realconf"
+                                    ;;
+                    esac
+                    exit 0
+
+
 
      5./lib64 :
        /lib64/ld-linux-x86-64.so.2
