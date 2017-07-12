@@ -16,12 +16,14 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 - Build your kernel 
 
 
-    Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules
-         The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image.  
+    Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/9pFS/Vsock/HyerpV settings, which were set to be built-in instead of modules.
+           The Kconfig above is still a work in process in terms of eliminating unnecessary components from the kernel image.  
 
 ## How to construct user-mode components
 
-Under the / directory, the following directory structure is required:
+THe expected user mode directory structure is required to constructed as follows:
+
+Under the / directory, it should have the following subdirectories:
 
 - /tmp 
 - /proc 
@@ -41,89 +43,24 @@ Under the / directory, the following directory structure is required:
 
 Here are the expected contents of each subdirectory /file
      
-1. subdirectories with empty contents:  /tmp /proc /dev /run /etc /usr /mnt /sys 
+1. Subdirectories with empty contents:  /tmp /proc /dev /run /etc /usr /mnt /sys 
 
 2. /init  ;  the init script file, [click to see its contents](../kernelconfig/4.11/scripts/init_scripts)
-   
 
 3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
-        
-        /root/integration/prebuildSandbox.vhdx
+         /root/integration/prebuildSandbox.vhdx
 
 4./sbin : 
         /sbin/runc  
 
         Note:this is the "runc" binary for hosting the container execution environment. 
-              It needs to be a version with the following release
+              It needs to be the following release
               runc version 1.0.0-rc3
               commit: 992a5be178a62e026f4069f443c6164912adbf09
               spec: 1.0.0-rc5
 
-        /sbin/udhcpc_config.script  ; see below for it contents
-                             
-                    #!/bin/sh
-                    RESOLV_CONF="/etc/resolv.conf"
-
-                    # dump the contents of the /etc/resolv.conf"
-                    if [ -e $RESOLV_CONF ]; then
-                       echo "initial contents of $RESOLV_CONF: used to configure a sysmtem Domain Name System resolver"
-                       cat $RESOLV_CONF
-
-                    else
-                       echo "$RESOLV_CONF does not exist"
-                    fi
-
-                    [ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
-
-                    echo "Parameter 1: $1"
-
-                    NETMASK=""
-                    [ -n "$subnet" ] && NETMASK="netmask $subnet"
-                    BROADCAST="broadcast +"
-                    [ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
-
-                    case "$1" in
-                            deconfig)
-                                    echo $1
-                                    echo "    Setting IP address 0.0.0.0 on $interface"
-                                    ifconfig $interface 0.0.0.0
-                                    ;;
-
-                            renew|bound)
-                                    echo $1
-                                    echo "    Setting IP address $ip on $interface"
-                                    ifconfig $interface $ip $NETMASK $BROADCAST
-                                    echo "router = [$router]"
-                                    if [ -n "$router" ] ; then
-                                            echo "Deleting routers"
-                                            while route del default gw 0.0.0.0 dev $interface ; do
-                                                    :
-                                            done
-
-                                            metric=0
-                                            for i in $router ; do
-                                                    echo "Adding router $i"
-                                                    route add default gw $i dev $interface metric $metric
-                                                    : $(( metric += 1 ))
-                                            done
-                                    fi
-
-                                    echo "Recreating $RESOLV_CONF"
-                                    # If the file is a symlink somewhere (like /etc/resolv.conf
-                                    # pointing to /run/resolv.conf), make sure things work.
-                                    realconf=$(readlink -f "$RESOLV_CONF" 2>/dev/null || echo "$RESOLV_CONF")
-                                    tmpfile="$realconf-$$"
-                                    > "$tmpfile"
-                                    echo "doamin=[$domain]"
-                                    [ -n "$domain" ] && echo "search $domain" >> "$tmpfile"
-                                    for i in $dns ; do
-                                            echo " Adding DNS server $i"
-                                            echo "nameserver $i" >> "$tmpfile"
-                                    done
-                                    mv "$tmpfile" "$realconf"
-                                    ;;
-                    esac
-                    exit 0
+/sbin/[udhcpc_config.script](https://github.com/mirror/busybox/blob/master/examples/udhcp/simple.script)
+    
 5./lib64 :
        /lib64/ld-linux-x86-64.so.2
 
@@ -141,9 +78,9 @@ Here are the expected contents of each subdirectory /file
        /lib/x86_64-linux-gnu/libuuid.so.1
        /lib/modules
 
-      7./bin : key LCOW binaries stored in this directories
+7./bin : key LCOW binaries stored in this directories
         
-        // GCS binaries built from [here](./docs/gcsbuildinstructions.md/)
+- GCS binaries built from [here](./docs/gcsbuildinstructions.md/)
             /bin/gcs
             /bin/gcstools
             /bin/vhd2tar
@@ -151,7 +88,7 @@ Here are the expected contents of each subdirectory /file
             /bin/exportSandbox
             /bin/createSandbox
 
-        // required binaires
+- required binaires
 
              /bin/sh
              /bin/mkfs.ext4
@@ -165,9 +102,9 @@ Here are the expected contents of each subdirectory /file
              /bin/iproute
              /bin/hostname
 
-        // debugging tools
+- debugging tools
 
-        [See complete user-mode file list](./kernelconfig/4.11/completeUsermodeFileLists.md/)
+       [See complete user-mode file list](./kernelconfig/4.11/completeUsermodeFileLists.md/)
         
 
 # Supported LCOW custom Linux OS packaing formats
