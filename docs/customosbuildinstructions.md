@@ -11,7 +11,7 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
         Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
 
-        [How to build GCS binaries](./docs/gcsbuildinstructions.md/)
+        [How to build GCS binaries](./gcsbuildinstructions.md/)
 
         Use the recommended [Kconfig](../kernelconfig/4.11/kconfig_for_4_11/) to build a 4.11 kernel that includes all LCOW necessary kernel componments.
         Build your kernel 
