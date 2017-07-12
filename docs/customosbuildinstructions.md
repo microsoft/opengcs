@@ -9,7 +9,9 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
     In your 4.11 kernel source tree:
 
-        Apply additional [4.11 patches](https://github.com/Microsoft/opengcs/blob/docs/kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
+        Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
+
+        [linuxkit/homebrew-linuxkit](https://github.com/linuxkit/homebrew-linuxkit),
 
         [How to build GCS binaries](./gcsbuildinstructions.md/)
 
