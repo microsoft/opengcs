@@ -71,8 +71,6 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
         /sbin/udhcpc_config.script  ; see below for it contents
                              
                     #!/bin/sh
-                    # udhcpc script edited by Tim Riker <Tim@Rikers.org>
-
                     RESOLV_CONF="/etc/resolv.conf"
 
                     # dump the contents of the /etc/resolv.conf"
