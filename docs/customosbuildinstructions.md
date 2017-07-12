@@ -2,7 +2,7 @@
 
 # How to produce a custom Linux OS image
 
-A LCOW custom Linx OS image was divided into two parts: a Linux kernel module and a set of user-mode componments. Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
+A LCOW custom Linux OS image was divided into two parts: a Linux kernel module and a set of user-mode components. Both parts were highly customized for the purpose of supporting Linux Hyper-V container on Windows
 
 
 ## How to build custom kernel module
