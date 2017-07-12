@@ -96,7 +96,6 @@ Here are the expected contents of each subdirectory /file
 
              /bin/sh
              /bin/mkfs.ext4
-             /bin/remotefs
              /bin/blockdev
              /bin/mkdir
              /bin/rmdir
@@ -111,9 +110,9 @@ Here are the expected contents of each subdirectory /file
 
 # Supported LCOW custom Linux OS packaging formats
 
-    A LCOW custom Linux OS could be packaged into two different supported formats: 
-    Kernel + Initrd: vmlinuz and initrd.img
-    VHD: a VHDx file
+A LCOW custom Linux OS could be packaged into two different supported formats: 
+- Kernel + Initrd: vmlinuz and initrd.img
+- VHD: a VHDx file
 
 
 
