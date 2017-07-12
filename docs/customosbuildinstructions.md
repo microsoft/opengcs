@@ -9,7 +9,8 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
     In your 4.11 kernel source tree:
 
-        Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md/) to your 4.11 kernel source tree 
+        Apply additional [4.11 patches](../kernelconfig/4.11/patches_readme.md) to your 4.11 kernel source tree 
+
         Use the recommended [Kconfig](../kernelconfig/4.11/kconfig_for_4_11/) to build a 4.11 kernel that includes all LCOW necessary kernel componments.
         Build your kernel 
 
@@ -29,29 +30,29 @@ A LCOW custom Linx OS image was devided into two parts: a Linux kernel module an
 
      2. /init  ;  the init script file, which has the following contents
 
-        #!/bin/sh
-        export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+                #!/bin/sh
+                export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-        # Configure everything before running GCS
-        # Set up mounts
-        mount -t proc proc /proc
-        mount -t sysfs sysfs /sys
-        mount -t devtmpfs udev /dev
-        mount -t tmpfs tmpfs /run
-        mount -t cgroup cgroup /sys/fs/cgroup
+                # Configure everything before running GCS
+                # Set up mounts
+                mount -t proc proc /proc
+                mount -t sysfs sysfs /sys
+                mount -t devtmpfs udev /dev
+                mount -t tmpfs tmpfs /run
+                mount -t cgroup cgroup /sys/fs/cgroup
 
-        mkdir /dev/mqueue
-        mount -t mqueue mqueue /dev/mqueue
-        mkdir /dev/pts
-        mount -t devpts devpts /dev/pts
-        mkdir /dev/shm
-        mount -t tmpfs shm /dev/shm
+                mkdir /dev/mqueue
+                mount -t mqueue mqueue /dev/mqueue
+                mkdir /dev/pts
+                mount -t devpts devpts /dev/pts
+                mkdir /dev/shm
+                mount -t tmpfs shm /dev/shm
 
-        # Run gcs in the background
-        cd /bin
-        ./gcs  -loglevel=verbose -logfile=/tmp/gcslog.txt &
-        cd -
-        sh
+                # Run gcs in the background
+                cd /bin
+                ./gcs  -loglevel=verbose -logfile=/tmp/gcslog.txt &
+                cd -
+                sh
 
 
      3./root : this is the home directory of the root account. At this moment, it contains a sandbox file with a prebuilt empty ext4 fs for supporting service vm operations
