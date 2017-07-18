@@ -2,6 +2,7 @@
 
 WORKDIR=$(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 BINDIR=$(WORKDIR)/bin
+RUNCDIR=$(WORKDIR)/../vendor/github.com/opencontainers/runc
 
 GO_PACKAGES=\
 	./gcs \
@@ -13,6 +14,8 @@ GCS_TOOLS=\
 	createSandbox \
 	exportSandbox
 
+RUNC_BINARY=runc
+
 GO_FLAGS=-pkgdir "$(WORKDIR)/pkg"
 
 all: gobins
@@ -20,6 +23,8 @@ all: gobins
 gobins:
 	(cd $(WORKDIR) && GOBIN="$(BINDIR)" CGO_ENABLED=0 go install $(GO_FLAGS) $(GO_PACKAGES))
 	(cd $(BINDIR) && $(foreach tool,$(GCS_TOOLS), ln -f "gcstools" "$(tool)";))
+	(cd $(RUNCDIR) && make && cp $(RUNC_BINARY) $(BINDIR))
+
 
 clean:
 	rm -f "$(BINDIR)/"*
