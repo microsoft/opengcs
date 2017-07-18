@@ -80,7 +80,7 @@ func VHD2Tar(in io.Reader, out io.Writer, options *Options) (int64, error) {
 		return 0, err
 	}
 
-	mntFolder, err := ioutil.TempDir("", "mnt")
+	mntFolder, err := ioutil.TempDir("", "tmp")
 	if err != nil {
 		return 0, err
 	}
