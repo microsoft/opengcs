@@ -21,9 +21,9 @@ make BUILDTAGS=``
 sudo cp ./runc /bin/runc
 /bin/runc -version
 
+
 echo "install Ginkgo"
 go get github.com/onsi/ginkgo/ginkgo
-
 #echo "start running unittest cases"
 #cd $GOPATH/src/github.com/Microsoft/opengcs/service/gcs
 #ginkgo -r -race
