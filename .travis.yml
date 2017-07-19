@@ -17,9 +17,8 @@ script:
      - git clone https://github.com/opencontainers/runc runc
      - cd runc && git checkout 992a5be178a62e026f4069f443c6164912adbf09 
      - ls -l
-     - make BUILDTAGS=``
-     - sudo make install
-     - cp ./runc /bin/runc
+     - make BUILDTAGS=`` 
+     - sudo cp ./runc /bin/runc
      - find . | grep runc
      - /bin/runc -version
      - pwd
