@@ -35,9 +35,8 @@ go get github.com/onsi/gomega
 
 
 echo "start running unittest cases"
-
-#cd $GOPATH/src/github.com/Microsoft/opengcs/service/gcs
-#ginkgo -r -race
+cd $GOPATH/src/github.com/Microsoft/opengcs/service/gcs
+ginkgo -r -race
 
 
 echo "cleaning up test environment"
