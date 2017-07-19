@@ -35,7 +35,6 @@ script:
      - sudo mkdir -p /var/run/gcsrunc
      - sudo docker export $(sudo docker create busybox) | tar -C $rootfs -xvf - > /dev/null
      - echo "Start running unittests"
-     - sudo -i
      - cd $GOPATH/src/github.com/Microsoft/opengcs/service/gcs
      - ginkgo -r -race
 
