@@ -126,7 +126,7 @@ func CreateTarDisk(in io.Reader,
 
 	logrus.Info("entering CreateTarDisk")
 
-	mntFolder, err := ioutil.TempDir(tmpdir, "mnt")
+	mntFolder, err := ioutil.TempDir(tmpdir, "tmp")
 	if err != nil {
 		return 0, err
 	}
