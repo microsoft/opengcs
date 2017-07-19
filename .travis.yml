@@ -12,6 +12,7 @@ sudo: required
 script:
      - cd service && make 
      - cd ../../.. && pwd 
+     - sudo apt-get install pkg-config
      - sudo apt-get install libseccomp-dev
      - go env
      - mkdir opencontainers && cd opencontainers
