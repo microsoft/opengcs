@@ -18,7 +18,7 @@ script:
      - cd ../../.. && pwd 
      - sudo apt-get install pkg-config
      - sudo apt-get install libseccomp-dev
-     - sudo pat-get install seccomp*
+     - sudo apt-get install seccomp*
      - go env
      - mkdir opencontainers && cd opencontainers
      - git clone https://github.com/opencontainers/runc runc
