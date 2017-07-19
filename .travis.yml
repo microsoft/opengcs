@@ -22,13 +22,17 @@ script:
      - /bin/runc -version
      - pwd
      - cd $CURR_DIR
-     - pwd && ls 
-     - echo "calling setup_test_env
+     - pwd && ls
+     - echo "install Ginkgo and Gomega"
+     - go get github.com/onsi/ginkgo/ginkgo
+     - go get github.com/onsi/gomega
+     - echo "calling setup_test_env"
      - script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
      - cd $script_dir
      - echo "Generate busybox rootfs directory for runC tests"
      - rootfs=runtime/runc/testbundle/rootfs
-     - mkdir $rootfs
+     - mkdir -p $rootfs
      - sudo docker export $(sudo docker create busybox) | tar -C $rootfs -xvf - > /dev/null
+     - echo "Start running unittests"
 
 
