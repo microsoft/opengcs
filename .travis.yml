@@ -24,5 +24,7 @@ script:
      - make BUILDTAGS=``
      - sudo make install
      - find . | grep runc
+     - runc -version
+     - cd ../../Microsoft/service && pwd
       
 
