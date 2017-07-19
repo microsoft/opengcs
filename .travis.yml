@@ -10,7 +10,6 @@ matrix:
 sudo: required
 
 script:
-     - export CURR_DIR=$PWD
      - cd service && make 
-     - cd ../gcs && ./run_unittests
+     - cd gcs && ./run_unittests
 
