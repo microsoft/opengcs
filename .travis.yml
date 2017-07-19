@@ -1,14 +1,15 @@
 language: go
 
 go:
-- 1.8
+- 1.8.3
 
 matrix:
   include:
     - os: linux
-
+ 
 sudo: required
 
-script: 
-      - cd service && make 
+script:
+     - cd service && make 
+     - cd gcs && ./run_unittests
 
