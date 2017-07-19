@@ -34,5 +34,6 @@ script:
      - mkdir -p $rootfs
      - sudo docker export $(sudo docker create busybox) | tar -C $rootfs -xvf - > /dev/null
      - echo "Start running unittests"
-     - cd $GOPATH/src/github.com/Microsoft/service/gcs/ginkgo -r -race
+     - cd $GOPATH/src/github.com/Microsoft/service/gcs
+     - ginkgo -r -race
 
