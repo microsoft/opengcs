@@ -32,7 +32,7 @@ script:
      - echo "Generate busybox rootfs directory for runC tests"
      - rootfs=runtime/runc/testbundle/rootfs
      - mkdir -p $rootfs
-     - mkdir -p /var/run/gcsrunc
+     - sudo mkdir -p /var/run/gcsrunc
      - sudo docker export $(sudo docker create busybox) | tar -C $rootfs -xvf - > /dev/null
      - echo "Start running unittests"
      - cd $GOPATH/src/github.com/Microsoft/opengcs/service/gcs
