@@ -21,6 +21,6 @@ script:
      - sudo make install
      - find . | grep runc
      - runc -version
-     - cd ../../Microsoft/service && pwd
+     - cd ../../Microsoft/open/service && pwd
       
 
