@@ -10,6 +10,7 @@ matrix:
 sudo: required
 
 script:
+     - export CURR_DIR=$PWD
      - cd service && make 
      - cd ../../.. && pwd 
      - go env
@@ -22,6 +23,7 @@ script:
      - find . | grep runc
      - runc -version
      - pwd
-     - cd ../../Microsoft/open/service
+     - cd $CURR_DIR
+     - pwd && ls 
       
 
