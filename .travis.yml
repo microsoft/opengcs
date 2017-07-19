@@ -6,11 +6,7 @@ go:
 matrix:
   include:
     - os: linux
-      addons:
-         apt:
-           packages:
-             - gcc
-  
+ 
 sudo: required
 
 script:
