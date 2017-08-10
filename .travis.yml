@@ -16,6 +16,15 @@ services:
 install: ./service/gcs/setup_test_env
 
 script:
+  # Server-side checks
   - cd service && make
   - go test ./gcsutils/...
   - cd gcs && sudo env "PATH=$PATH" ginkgo -r -race -keepGoing
+
+  # Client-side checks
+  - cd ../../client
+  - go get -u github.com/golang/lint/golint 
+  - go get github.com/GeertJohan/fgt
+  - bash test/.checkgocode.sh
+  - go get -d github.com/Microsoft/hcsshim github.com/Microsoft/go-winio
+  - export GOOS="windows" && go build
