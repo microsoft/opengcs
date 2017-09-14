@@ -15,6 +15,7 @@ please follow the instructions:
 - Apply additional LOCW patches to your kernel source tree
 
 - Use the matching recommended [Kconfig](../kernel) to include all LCOW necessary kernel components
+
     Note:  The key delta between the upsteam default setting and above kconfig is in the area of ACPI/NIFT/NVDIMM/OverlyFS/Vsock/HyerpV settings, which were set to be built-in instead of modules.
            The Kconfig above is still a work in process in terms of trimming any unnecessary components from the kernel image.
 

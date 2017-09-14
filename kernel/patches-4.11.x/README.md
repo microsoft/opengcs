@@ -103,3 +103,12 @@ apply them in the same order:
 17. https://github.com/dcui/linux/commit/651dae7de6c6f066c08845ec7335bfb231d5eabe.patch
 18. https://github.com/dcui/linux/commit/e37da6e7a52ea60825ca676e0c59fe5e4ecd89d6.patch
 
+
+## 3. Patch set for the Hyper-V vsock support
+
+If you are building kernel >= 4.11.1, you would need to pick up the following Linux kernel commit to be able to use PMEM devices for Docker layers.
+
+git fetch [fd96b8da68d32a9403726db09b229f4b5ac849c7](https://github.com/torvalds/linux/commit/fd96b8da68d32a9403726db09b229f4b5ac849c7#diff-f959e50cbd17809e773ef7b89a38d3ca)
+
+Note: this is needed because a regression in this 4.11.1 [commit](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/?h=linux-4.11.y&id=5a3651b4a92cbc5230d67d2ce87fb3f7373c7665)
+

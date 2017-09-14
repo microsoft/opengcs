@@ -1,17 +1,17 @@
-# How to build 4.11.x based custom Linux kernel for LCOW
+# How to build 4.12.x based custom Linux kernel for LCOW
 
-You can download the Linux 4.11 source code from [kernel.org](https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.11.tar.xz).
+You can download the Linux 4.12 source code from [kernel.org](https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz).
 
-Once you get the _4.11 kernel_, apply all the following patches 
+Once you get the _4.12 kernel_, apply all the following patches 
 
 ## 1. Patch for "nvdimm: Lower minimum PMEM size"
 
-The patch file is located in the [patches-4.11.x](./patches-4.11.x) directory.  
+The patch file is located in the [patches-4.12.x](./patches-4.12.x) directory.  
 
 You should be in the Linux kernel source directory before applying the patch with the following command
 
 ```
-patch -p1 < /path/to/kernel/patches-4.11.x/0002-*
+patch -p1 < /path/to/kernel/patches-4.12.x/0002-*
 ```
 
 
@@ -68,16 +68,4 @@ apply them in the same order:
 16. https://github.com/dcui/linux/commit/f315dfcf9c3b4b32f43a21664762cbacd8f05d6a.patch
 17. https://github.com/dcui/linux/commit/d6f7158fdbac10f9935a506451e3d54d2d50a7c7.patch
 
-
-<<<<<<< HEAD
-## 3. Patch set for the Hyper-V vsock support
-
-If you are building kernel >= 4.11.1, you would need to pick up the following Linux kernel commit to be able to use PMEM devices for Docker layers.
-
-git fetch [fd96b8da68d32a9403726db09b229f4b5ac849c7](https://github.com/torvalds/linux/commit/fd96b8da68d32a9403726db09b229f4b5ac849c7#diff-f959e50cbd17809e773ef7b89a38d3ca)
-
-Note: this is needed because a regression in this 4.11.1 [commit](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/?h=linux-4.11.y&id=5a3651b4a92cbc5230d67d2ce87fb3f7373c7665)
-=======
-
->>>>>>> f97a628cc4ec322564e5022d2da6773554f80d3b
 
