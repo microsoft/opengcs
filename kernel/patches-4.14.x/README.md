@@ -27,16 +27,16 @@ git config --global user.email youremailaddress
  
 git remote add -f dexuan-github https://github.com/dcui/linux.git
  
-git cherry-pick f8dd01899c1cdab7600d7df50dbd25dbcf891072
+git cherry-pick d4ed5cfe7acffb1df92d11cb51f30faadbba171b
 git cherry-pick f77d3c692e3d5182286f02dbe683463802afc77a
-git cherry-pick 866488f04fc4d8ff513697db2f80263e90277291
+git cherry-pick f8dd01899c1cdab7600d7df50dbd25dbcf891072
 
 ```
 
 Another way to get the patches is to download them from the following list and
 apply them in the same order:
 
-1.  https://github.com/dcui/linux/commit/f8dd01899c1cdab7600d7df50dbd25dbcf891072.patch
+1.  https://github.com/dcui/linux/commit/d4ed5cfe7acffb1df92d11cb51f30faadbba171b.patch
 2.  https://github.com/dcui/linux/commit/f77d3c692e3d5182286f02dbe683463802afc77a.patch
-3.  https://github.com/dcui/linux/commit/866488f04fc4d8ff513697db2f80263e90277291.patch
+3.  https://github.com/dcui/linux/commit/f8dd01899c1cdab7600d7df50dbd25dbcf891072.patch
 

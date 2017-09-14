@@ -1,4 +1,4 @@
-# Custom Linux kernel for LCOW
+# How to build custom Linux kernels for LCOW
 
 Here you will find the steps to build a custom kernel for the
 Linux Hyper-V container on Windows (**LCOW**). To build the full image,
