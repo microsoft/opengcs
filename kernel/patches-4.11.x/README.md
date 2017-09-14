@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # How to build 4.12.x based custom Linux kernel for LCOW
 
 You can download the Linux 4.12 source code from [kernel.org](https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz).
@@ -16,6 +17,41 @@ patch -p1 < /path/to/kernel/patches-4.12.x/0002-*
 
 
 #### 2. Patch set for the Hyper-V vsock support
+=======
+# Custom Linux kernel for LCOW
+
+Here you will find the steps to build a custom kernel for the
+Linux Hyper-V container on Windows (**LCOW**). To build the full image,
+please follow the instruction from [how to produce a custom Linux OS
+image](../docs/customosbuildinstructions.md)
+
+## Patches
+
+So far **LCOW** is based on Linux Kernel 4.11, you can download the Linux source
+code from [kernel.org](https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.11.tar.xz).
+
+Once you get the _4.11 kernel_, apply all the patches files located in the
+[patches-4.11.x](./patches-4.11.x) directory. You should be in the Linux kernel
+source directory
+
+```
+patch -p1 < /path/to/kernel/patches-4.11.x/0001-*
+patch -p1 < /path/to/kernel/patches-4.11.x/0002-*
+```
+
+or in a simple line
+
+```
+for p in /path/to/kernel/patches-4.11.x/*.patch; do patch -p1 < $p;  done
+```
+
+Beside the patches located in the [patches-4.11.x](./patches-4.11.x) directory,
+you need to apply a set of patches to enable the **Hyper-V vsock transport**
+feature in the Linux kernel. Please refer to the following section to view the
+instructions to get them.
+
+#### Instructions for getting Hyper-V vsock patch set
+>>>>>>> f97a628cc4ec322564e5022d2da6773554f80d3b
 
 These patches enables the **Hyper-V vsock transport** feature,
 this instructions is to get them from a developer repository and
@@ -69,4 +105,15 @@ apply them in the same order:
 17. https://github.com/dcui/linux/commit/651dae7de6c6f066c08845ec7335bfb231d5eabe.patch
 18. https://github.com/dcui/linux/commit/e37da6e7a52ea60825ca676e0c59fe5e4ecd89d6.patch
 
+<<<<<<< HEAD
 
+=======
+### Patches structure
+
+In the [patches-4.11.x](./patches-4.11.x) directory you will find the
+following patches:
+
+  - [9pfs: added vsock transport support](./patches-4.11.x/0001-Added-vsock-transport-support-to-9pfs.patch)
+
+  - [nvdimm: Lower minimum PMEM size](./patches-4.11.x/0002-NVDIMM-reducded-ND_MIN_NAMESPACE_SIZE-from-4MB-to-4K.patch)
+>>>>>>> f97a628cc4ec322564e5022d2da6773554f80d3b
