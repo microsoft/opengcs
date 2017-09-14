@@ -6,7 +6,7 @@ Once you get the _4.11 kernel_, apply all the following patches
 
 ## 1. Patch for "nvdimm: Lower minimum PMEM size"
 
-The [patch file](./patches-4.11.x/0002-NVDIMM-reducded-ND_MIN_NAMESPACE_SIZE-from-4MB-to-4K.patch could be find in this directory.  
+The [patch file](./patches-4.11.x/0002-NVDIMM-reducded-ND_MIN_NAMESPACE_SIZE-from-4MB-to-4K.patch) could be find in this directory.  
 
 You should be in the Linux kernel source directory before applying the patch with the following command
 
