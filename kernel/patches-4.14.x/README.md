@@ -1,12 +1,12 @@
 # How to build 4.14.x based custom Linux kernel for LCOW
 
-You can download the Linux 4.14 source code from [kernel.org](https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.14.tar.xz).
+You can download the Linux 4.14 source code from kernel.org
 
 Once you get the _4.14 kernel_, apply all the following patches 
 
 ## 1. Patch for "nvdimm: Lower minimum PMEM size"
 
-The patch file is located in the [patches-4.14.x](./patches-4.14.x) directory.  
+The patch file is located in the [patches-4.14.x](./patches-4.14.x/0002-NVDIMM-reducded-ND_MIN_NAMESPACE_SIZE-from-4MB-to-4K.patch) directory.  
 
 You should be in the Linux kernel source directory before applying the patch with the following command
 
