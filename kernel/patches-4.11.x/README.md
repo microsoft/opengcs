@@ -6,7 +6,7 @@ Once you get the _4.11 kernel_, apply all the following patches
 
 ## 1. Patch for "nvdimm: Lower minimum PMEM size"
 
-The [patch file](./patches-4.11.x/0002-NVDIMM-reducded-ND_MIN_NAMESPACE_SIZE-from-4MB-to-4K.patch could be find in this directory.  
+This [patch file](./0002-NVDIMM-reducded-ND_MIN_NAMESPACE_SIZE-from-4MB-to-4K.patch) could be find in this directory.  
 
 You should be in the Linux kernel source directory before applying the patch with the following command
 
@@ -69,11 +69,14 @@ apply them in the same order:
 18. https://github.com/dcui/linux/commit/e37da6e7a52ea60825ca676e0c59fe5e4ecd89d6.patch
 
 
-## 3. Patch set for the Hyper-V vsock support
+## 3. Patch for "ext4: fix fault handling when mounted with -o dax,ro"
 
-If you are building kernel >= 4.11.1, you would need to pick up the following Linux kernel commit to be able to use PMEM devices for Docker layers.
+There was a regression (see [this 4.11.1 commit](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/?h=linux-4.11.y&id=5a3651b4a92cbc5230d67d2ce87fb3f7373c7665))
+on the readonly DAX enabled readonly ext4 support. 
+
+If you are building kernel >= 4.11.1, you would need to pick up the following fix for this regression to be able to use PMEM devices for Docker layers.
 
 git fetch [fd96b8da68d32a9403726db09b229f4b5ac849c7](https://github.com/torvalds/linux/commit/fd96b8da68d32a9403726db09b229f4b5ac849c7#diff-f959e50cbd17809e773ef7b89a38d3ca)
 
-Note: This is needed because a regression in [this 4.11.1 commit](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/?h=linux-4.11.y&id=5a3651b4a92cbc5230d67d2ce87fb3f7373c7665)
+
 
