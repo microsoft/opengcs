@@ -27,23 +27,23 @@ git config --global user.email youremailaddress
  
 git remote add -f dexuan-github https://github.com/dcui/linux.git
  
-git cherry-pick 5181302de497cb7d5de37bbc84e01eca676f20d8
-git cherry-pick b54a12c4e3f18cd48314fd3851f5651446b0e6ee
-git cherry-pick 866488f04fc4d8ff513697db2f80263e90277291
-git cherry-pick fdd8e16c855a6c7238c654d7217dcf51c5533307
-git cherry-pick b02ea409f1fceeaac6fd971db5d095ecc903de2d
-git cherry-pick 27e512021e36c67dd1c773a52b23d71896c80602
-git cherry-pick e2c1d1b8e8d17cc9b423688d59ad486c5f38deca
-git cherry-pick e015b0a767dcab79b8b8361516f3f4322cdc90a7
-git cherry-pick b9cc90e62104bd001b05d897f84cb7d30d1780bb
-git cherry-pick 022c888e809721a67ecd3072e6331cbdaab45536
-git cherry-pick 81304747d9bcba135c9a9d534f3a3190bca92339
-git cherry-pick db40d92a09ff6b84b6c47e96d0a8d1cb1f83cd36
-git cherry-pick 0465d97030768485eec5a69a98963e3da7402826
-git cherry-pick 7592de58cbf8d199d721503385c20a02743425a9
-git cherry-pick 02d07a9dcdb042f33248fd3aeb1e5c2eca6d3d49
-git cherry-pick f315dfcf9c3b4b32f43a21664762cbacd8f05d6a
-git cherry-pick d6f7158fdbac10f9935a506451e3d54d2d50a7c7
+git cherry-pick -x 5181302de497cb7d5de37bbc84e01eca676f20d8
+git cherry-pick -x b54a12c4e3f18cd48314fd3851f5651446b0e6ee
+git cherry-pick -x 866488f04fc4d8ff513697db2f80263e90277291
+git cherry-pick -x fdd8e16c855a6c7238c654d7217dcf51c5533307
+git cherry-pick -x b02ea409f1fceeaac6fd971db5d095ecc903de2d
+git cherry-pick -x 27e512021e36c67dd1c773a52b23d71896c80602
+git cherry-pick -x e2c1d1b8e8d17cc9b423688d59ad486c5f38deca
+git cherry-pick -x e015b0a767dcab79b8b8361516f3f4322cdc90a7
+git cherry-pick -x b9cc90e62104bd001b05d897f84cb7d30d1780bb
+git cherry-pick -x 022c888e809721a67ecd3072e6331cbdaab45536
+git cherry-pick -x 81304747d9bcba135c9a9d534f3a3190bca92339
+git cherry-pick -x db40d92a09ff6b84b6c47e96d0a8d1cb1f83cd36
+git cherry-pick -x 0465d97030768485eec5a69a98963e3da7402826
+git cherry-pick -x 7592de58cbf8d199d721503385c20a02743425a9
+git cherry-pick -x 02d07a9dcdb042f33248fd3aeb1e5c2eca6d3d49
+git cherry-pick -x f315dfcf9c3b4b32f43a21664762cbacd8f05d6a
+git cherry-pick -x d6f7158fdbac10f9935a506451e3d54d2d50a7c7
 
 ```
 

@@ -12,7 +12,7 @@ please follow the instructions:
 
 - Have your kernel source tree ready
 
-- Apply additional LOCW patches to your kernel source tree
+- Apply additional LCOW patches to your kernel source tree
 
 - Use the matching recommended [Kconfig](../kernel) to include all LCOW necessary kernel components
 
@@ -27,7 +27,6 @@ please follow the instructions:
     
  - [How to build 4.12.x based kernel](../kernel/patches-4.12.x)
 
- - [How to build 4.14.x based kernel](../kernel/patches-4.14.x)
 
 
 ## How to construct user-mode components
