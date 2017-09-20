@@ -15,8 +15,20 @@
 			"revisionTime": "2017-05-25T18:40:16Z"
 		},
 		{
+			"checksumSHA1": "E/mzFkzMngqmbO2xTrSJMeC722c=",
+			"path": "github.com/docker/docker",
+			"revision": "4f3616fb1c112e206b88cb7a9922bf49067a7756",
+			"revisionTime": "2017-07-26T22:03:47Z"
+		},
+		{
 			"checksumSHA1": "E7RpPmZzz3Zj562T01hY/jtlKs0=",
 			"path": "github.com/docker/docker/pkg/archive",
+			"revision": "4f3616fb1c112e206b88cb7a9922bf49067a7756",
+			"revisionTime": "2017-07-26T22:03:47Z"
+		},
+		{
+			"checksumSHA1": "RkXPA7PJrXJUNYF9pI+u1OK9i50=",
+			"path": "github.com/docker/docker/pkg/directory",
 			"revision": "4f3616fb1c112e206b88cb7a9922bf49067a7756",
 			"revisionTime": "2017-07-26T22:03:47Z"
 		},

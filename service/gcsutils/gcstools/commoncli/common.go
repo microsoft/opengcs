@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sirupsen/logrus"
 	"github.com/docker/docker/pkg/archive"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Microsoft/opengcs/service/gcsutils/fs"
 	"github.com/Microsoft/opengcs/service/gcsutils/libtar2vhd"

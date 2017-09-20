@@ -12,7 +12,8 @@ GCS_TOOLS=\
 	vhd2tar \
 	exportSandbox \
 	netnscfg \
-	remotefs
+	remotefs \
+	changes
 
 GO_FLAGS=-pkgdir "$(WORKDIR)/pkg"
 
