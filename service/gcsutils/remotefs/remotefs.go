@@ -512,7 +512,17 @@ func ExtractArchive(in io.Reader, out io.Writer, args []string) error {
 		return err
 	}
 
-	if err := archive.Untar(in, args[0], opts); err != nil {
+	size := uint64(0)
+	if err := binary.Read(in, binary.BigEndian, &size); err != nil {
+		return err
+	}
+
+	buf := &bytes.Buffer{}
+	if _, err := io.CopyN(buf, in, int64(size)); err != nil {
+		return err
+	}
+
+	if err := archive.Untar(buf, args[0], opts); err != nil {
 		return err
 	}
 	return nil
