@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -517,12 +518,22 @@ func ExtractArchive(in io.Reader, out io.Writer, args []string) error {
 		return err
 	}
 
-	buf := &bytes.Buffer{}
-	if _, err := io.CopyN(buf, in, int64(size)); err != nil {
+	f, err := ioutil.TempFile("/tmp/scratch", "ea")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(f.Name())
+	defer f.Close()
+
+	if _, err := io.CopyN(f, in, int64(size)); err != nil {
 		return err
 	}
 
-	if err := archive.Untar(buf, args[0], opts); err != nil {
+	if _, err := f.Seek(0, 0); err != nil {
+		return err
+	}
+
+	if err := archive.Untar(f, args[0], opts); err != nil {
 		return err
 	}
 	return nil
