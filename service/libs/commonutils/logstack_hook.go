@@ -2,7 +2,9 @@ package commonutils
 
 import (
 	"fmt"
+	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -21,10 +23,21 @@ func (h *stacklogger) Levels() []logrus.Level {
 }
 
 func (h *stacklogger) Fire(e *logrus.Entry) error {
-	pc := make([]uintptr, 10)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[1])
-	file, line := f.FileLine(pc[1])
-	e.Message = fmt.Sprintf("%s:%d %s() %s", file, line, f.Name(), e.Message)
+	// Skip logrus's 7 frames
+	skip := 7
+	if len(e.Data) != 0 {
+		// Called with WithFields(), so skip 5 frames instead
+		skip = 5
+	}
+
+	pc, file, line, ok := runtime.Caller(skip)
+	if !ok {
+		return fmt.Errorf("failed to get caller info")
+	}
+
+	f := runtime.FuncForPC(pc)
+	// Remove the github.com/.../service part because it's not useful
+	name := strings.TrimPrefix(f.Name(), "github.com/Microsoft/opengcs/service/")
+	e.Message = fmt.Sprintf("%s:%d %s() %s", filepath.Base(file), line, name, e.Message)
 	return nil
 }
