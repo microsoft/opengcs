@@ -244,12 +244,18 @@ func (c *gcsCore) CreateContainer(id string, settings prot.VMHostedContainerSett
 	containerEntry.initProcess.writersWg.Add(1)
 
 	// Set up mapped virtual disks.
-	if err := c.setupMappedVirtualDisks(id, settings.MappedVirtualDisks, containerEntry); err != nil {
+	if err := c.setupMappedVirtualDisks(id, settings.MappedVirtualDisks); err != nil {
 		return errors.Wrapf(err, "failed to set up mapped virtual disks during create for container %s", id)
 	}
+	for _, disk := range settings.MappedVirtualDisks {
+		containerEntry.AddMappedVirtualDisk(disk)
+	}
 	// Set up mapped directories.
-	if err := c.setupMappedDirectories(id, settings.MappedDirectories, containerEntry); err != nil {
+	if err := c.setupMappedDirectories(id, settings.MappedDirectories); err != nil {
 		return errors.Wrapf(err, "failed to set up mapped directories during create for container %s", id)
+	}
+	for _, dir := range settings.MappedDirectories {
+		containerEntry.AddMappedDirectory(dir)
 	}
 
 	// Set up layers.
@@ -292,7 +298,17 @@ func (c *gcsCore) CreateContainer(id string, settings prot.VMHostedContainerSett
 
 // ExecProcess executes a new process in the container. It forwards the
 // process's stdio through the members of the core.StdioSet provided.
-func (c *gcsCore) ExecProcess(id string, params prot.ProcessParameters, stdioSet *stdio.ConnectionSet) (int, error) {
+func (c *gcsCore) ExecProcess(id string, params prot.ProcessParameters, connection stdio.ConnectionSettings) (_ int, err error) {
+	stdioSet, err := stdio.Connect(c.vsock, connection)
+	if err != nil {
+		return -1, err
+	}
+	defer func() {
+		if err != nil {
+			stdioSet.Close()
+		}
+	}()
+
 	c.containerCacheMutex.Lock()
 	defer c.containerCacheMutex.Unlock()
 
@@ -310,7 +326,7 @@ func (c *gcsCore) ExecProcess(id string, params prot.ProcessParameters, stdioSet
 	var pid int
 	if !containerEntry.hasRunInitProcess {
 		containerEntry.hasRunInitProcess = true
-		if err := c.writeConfigFile(containerEntry.Index, params.OCISpecification); err != nil {
+		if err := c.writeConfigFile(containerEntry.Index, *params.OCISpecification); err != nil {
 			// Early exit. Cleanup our waiter since we never got a process.
 			containerEntry.initProcess.writersWg.Done()
 			return -1, err
@@ -517,7 +533,17 @@ func (c *gcsCore) GetProperties(id string, query string) (*prot.Properties, erro
 // namespace.
 // This can be used for things like debugging or diagnosing the utility VM's
 // state.
-func (c *gcsCore) RunExternalProcess(params prot.ProcessParameters, stdioSet *stdio.ConnectionSet) (pid int, err error) {
+func (c *gcsCore) RunExternalProcess(params prot.ProcessParameters, conSettings stdio.ConnectionSettings) (pid int, err error) {
+	stdioSet, err := stdio.Connect(c.vsock, conSettings)
+	if err != nil {
+		return -1, err
+	}
+	defer func() {
+		if err != nil {
+			stdioSet.Close()
+		}
+	}()
+
 	ociProcess, err := processParametersToOCI(params)
 	if err != nil {
 		return -1, err
@@ -549,7 +575,7 @@ func (c *gcsCore) RunExternalProcess(params prot.ProcessParameters, stdioSet *st
 		}
 		defer console.Close()
 
-		relay = stdioSet.NewTtyRelay(master)
+		relay = stdio.NewTtyRelay(stdioSet, master)
 		cmd.SetStdin(console)
 		cmd.SetStdout(console)
 		cmd.SetStderr(console)
@@ -606,7 +632,7 @@ func (c *gcsCore) RunExternalProcess(params prot.ProcessParameters, stdioSet *st
 // ModifySettings takes the given request and performs the modification it
 // specifies. At the moment, this function only supports the request types Add
 // and Remove, both for the resource type MappedVirtualDisk.
-func (c *gcsCore) ModifySettings(id string, request prot.ResourceModificationRequestResponse) error {
+func (c *gcsCore) ModifySettings(id string, request *prot.ResourceModificationRequestResponse) error {
 	c.containerCacheMutex.Lock()
 	defer c.containerCacheMutex.Unlock()
 
@@ -623,13 +649,15 @@ func (c *gcsCore) ModifySettings(id string, request prot.ResourceModificationReq
 		}
 		switch request.RequestType {
 		case prot.RtAdd:
-			if err := c.setupMappedVirtualDisks(id, []prot.MappedVirtualDisk{*mvd}, containerEntry); err != nil {
+			if err := c.setupMappedVirtualDisks(id, []prot.MappedVirtualDisk{*mvd}); err != nil {
 				return errors.Wrapf(err, "failed to hot add mapped virtual disk for container %s", id)
 			}
+			containerEntry.AddMappedVirtualDisk(*mvd)
 		case prot.RtRemove:
-			if err := c.removeMappedVirtualDisks(id, []prot.MappedVirtualDisk{*mvd}, containerEntry); err != nil {
+			if err := c.removeMappedVirtualDisks(id, []prot.MappedVirtualDisk{*mvd}); err != nil {
 				return errors.Wrapf(err, "failed to hot remove mapped virtual disk for container %s", id)
 			}
+			containerEntry.RemoveMappedVirtualDisk(*mvd)
 		default:
 			return errors.Errorf("the request type \"%s\" is not supported for resource type \"%s\"", request.RequestType, request.ResourceType)
 		}
@@ -640,13 +668,15 @@ func (c *gcsCore) ModifySettings(id string, request prot.ResourceModificationReq
 		}
 		switch request.RequestType {
 		case prot.RtAdd:
-			if err := c.setupMappedDirectories(id, []prot.MappedDirectory{*md}, containerEntry); err != nil {
+			if err := c.setupMappedDirectories(id, []prot.MappedDirectory{*md}); err != nil {
 				return errors.Wrapf(err, "failed to hot add mapped directory for container %s", id)
 			}
+			containerEntry.AddMappedDirectory(*md)
 		case prot.RtRemove:
-			if err := c.removeMappedDirectories(id, []prot.MappedDirectory{*md}, containerEntry); err != nil {
+			if err := c.removeMappedDirectories(id, []prot.MappedDirectory{*md}); err != nil {
 				return errors.Wrapf(err, "failed to hot remove mapped directory for container %s", id)
 			}
+			containerEntry.RemoveMappedDirectory(*md)
 		default:
 			return errors.Errorf("the request type \"%s\" is not supported for resource type \"%s\"", request.RequestType, request.ResourceType)
 		}
@@ -702,7 +732,7 @@ func (c *gcsCore) WaitContainer(id string) (func() int, error) {
 // sync.
 //
 // On error the pid was not a valid pid and no channels will be returned.
-func (c *gcsCore) WaitProcess(pid int) (chan int, chan bool, error) {
+func (c *gcsCore) WaitProcess(pid int) (<-chan int, chan<- bool, error) {
 	c.processCacheMutex.Lock()
 	entry, ok := c.processCache[pid]
 	if !ok {
@@ -771,18 +801,13 @@ func (c *gcsCore) WaitProcess(pid int) (chan int, chan bool, error) {
 // in storage.go to set up a set of mapped virtual disks for a given container.
 // It then adds them to the container's cache entry.
 // This function expects containerCacheMutex to be locked on entry.
-func (c *gcsCore) setupMappedVirtualDisks(id string, disks []prot.MappedVirtualDisk, containerEntry *containerCacheEntry) error {
+func (c *gcsCore) setupMappedVirtualDisks(id string, disks []prot.MappedVirtualDisk) error {
 	mounts, err := c.getMappedVirtualDiskMounts(disks)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get mapped virtual disk devices for container %s", id)
 	}
 	if err := c.mountMappedVirtualDisks(disks, mounts); err != nil {
 		return errors.Wrapf(err, "failed to mount mapped virtual disks for container %s", id)
-	}
-	for _, disk := range disks {
-		if err := containerEntry.AddMappedVirtualDisk(disk); err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -791,15 +816,13 @@ func (c *gcsCore) setupMappedVirtualDisks(id string, disks []prot.MappedVirtualD
 // in storage.go to set up a set of mapped directories for a given container.
 // It then adds them to the container's cache entry.
 // This function expects containerCacheMutex to be locked on entry.
-func (c *gcsCore) setupMappedDirectories(id string, dirs []prot.MappedDirectory, containerEntry *containerCacheEntry) error {
+func (c *gcsCore) setupMappedDirectories(id string, dirs []prot.MappedDirectory) error {
 	for _, dir := range dirs {
-		if err := c.mountMappedDirectory(&dir); err != nil {
-			return errors.Wrapf(err, "failed to mount mapped directory %s for container %s", dir.ContainerPath, id)
+		if !dir.CreateInUtilityVM {
+			return errors.New("we do not currently support mapping directories inside the container namespace")
 		}
-	}
-	for _, dir := range dirs {
-		if err := containerEntry.AddMappedDirectory(dir); err != nil {
-			return err
+		if err := mountPlan9Share(c.OS, c.vsock, dir.ContainerPath, "", dir.Port, dir.ReadOnly); err != nil {
+			return errors.Wrapf(err, "failed to mount mapped directory %s for container %s", dir.ContainerPath, id)
 		}
 	}
 	return nil
@@ -809,15 +832,12 @@ func (c *gcsCore) setupMappedDirectories(id string, dirs []prot.MappedDirectory,
 // in storage.go to unmount a set of mapped virtual disks for a given
 // container. It then removes them from the container's cache entry.
 // This function expects containerCacheMutex to be locked on entry.
-func (c *gcsCore) removeMappedVirtualDisks(id string, disks []prot.MappedVirtualDisk, containerEntry *containerCacheEntry) error {
+func (c *gcsCore) removeMappedVirtualDisks(id string, disks []prot.MappedVirtualDisk) error {
 	if err := c.unmountMappedVirtualDisks(disks); err != nil {
 		return errors.Wrapf(err, "failed to mount mapped virtual disks for container %s", id)
 	}
 	if err := c.unplugMappedVirtualDisks(disks); err != nil {
 		return errors.Wrapf(err, "failed to unplug mapped virtual disks for container %s", id)
-	}
-	for _, disk := range disks {
-		containerEntry.RemoveMappedVirtualDisk(disk)
 	}
 	return nil
 }
@@ -826,12 +846,9 @@ func (c *gcsCore) removeMappedVirtualDisks(id string, disks []prot.MappedVirtual
 // in storage.go to unmount a set of mapped directories for a given container.
 // It then removes them from the container's cache entry.
 // This function expects containerCacheMutex to be locked on entry.
-func (c *gcsCore) removeMappedDirectories(id string, dirs []prot.MappedDirectory, containerEntry *containerCacheEntry) error {
+func (c *gcsCore) removeMappedDirectories(id string, dirs []prot.MappedDirectory) error {
 	if err := c.unmountMappedDirectories(dirs); err != nil {
 		return errors.Wrapf(err, "failed to mount mapped directories for container %s", id)
-	}
-	for _, dir := range dirs {
-		containerEntry.RemoveMappedDirectory(dir)
 	}
 	return nil
 }

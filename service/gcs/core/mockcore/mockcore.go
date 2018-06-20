@@ -63,7 +63,7 @@ type RunExternalProcessCall struct {
 // ModifySettingsCall captures the arguments of ModifySettings.
 type ModifySettingsCall struct {
 	ID      string
-	Request prot.ResourceModificationRequestResponse
+	Request *prot.ResourceModificationRequestResponse
 }
 
 // ResizeConsoleCall captures the arguments of ResizeConsole
@@ -176,7 +176,7 @@ func (c *MockCore) RunExternalProcess(params prot.ProcessParameters, stdioSet *s
 }
 
 // ModifySettings captures its arguments.
-func (c *MockCore) ModifySettings(id string, request prot.ResourceModificationRequestResponse) error {
+func (c *MockCore) ModifySettings(id string, request *prot.ResourceModificationRequestResponse) error {
 	c.LastModifySettings = ModifySettingsCall{
 		ID:      id,
 		Request: request,
@@ -204,7 +204,7 @@ func (c *MockCore) WaitContainer(id string) (func() int, error) {
 }
 
 // WaitProcess captures its arguments and returns a nil error.
-func (c *MockCore) WaitProcess(pid int) (chan int, chan bool, error) {
+func (c *MockCore) WaitProcess(pid int) (<-chan int, chan<- bool, error) {
 	c.LastWaitProcess = WaitProcessCall{
 		Pid: pid,
 	}
