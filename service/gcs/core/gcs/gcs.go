@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/Microsoft/opengcs/service/gcs/core"
 	"github.com/Microsoft/opengcs/service/gcs/gcserr"
@@ -202,10 +203,12 @@ type processCacheEntry struct {
 	isInitProcess bool
 	Tty           *stdio.TtyRelay
 
-	// Signaled when the process itself has exited.
+	// Signaled when the process itself has exited, or an error occurred during setup.
 	exitWg sync.WaitGroup
 	// The exitCode set prior to signaling the exitWg
 	exitCode int
+	// Setup error before the process was even started.
+	setupError error
 
 	// Used to allow addtion/removal to the writersWg after an initial wait has
 	// already been issued. It is not safe to call Add/Done without holding this
@@ -241,6 +244,7 @@ func (c *gcsCore) CreateContainer(id string, settings prot.VMHostedContainerSett
 	// We need to only allow exited notifications when at least one WaitProcess
 	// call has been written. We increment the writers here which is safe even
 	// on failure because this entry will not be in the map on failure.
+	logrus.Debugf("gcscore::CreateContainer incrementing waitgroup for initprocess")
 	containerEntry.initProcess.writersWg.Add(1)
 
 	// Set up mapped virtual disks.
@@ -328,6 +332,7 @@ func (c *gcsCore) ExecProcess(id string, params prot.ProcessParameters, connecti
 		containerEntry.hasRunInitProcess = true
 		if err := c.writeConfigFile(containerEntry.Index, *params.OCISpecification); err != nil {
 			// Early exit. Cleanup our waiter since we never got a process.
+			containerEntry.initProcess.setupError = err
 			containerEntry.initProcess.writersWg.Done()
 			return -1, err
 		}
@@ -335,12 +340,14 @@ func (c *gcsCore) ExecProcess(id string, params prot.ProcessParameters, connecti
 		container, err := c.Rtime.CreateContainer(id, c.getContainerStoragePath(containerEntry.Index), stdioSet)
 		if err != nil {
 			// Early exit. Cleanup our waiter since we never got a process.
+			containerEntry.initProcess.setupError = err
 			containerEntry.initProcess.writersWg.Done()
 			return -1, err
 		}
 
 		containerEntry.container = container
 		pid = container.Pid()
+		logrus.Debugf("gcscore::ExecProcess incrementing initprocess exit waitgroup")
 		containerEntry.initProcess.exitWg.Add(1)
 		containerEntry.initProcess.Tty = container.Tty()
 
@@ -348,7 +355,18 @@ func (c *gcsCore) ExecProcess(id string, params prot.ProcessParameters, connecti
 		for _, adapter := range containerEntry.NetworkAdapters {
 			if err := c.configureAdapterInNamespace(container, adapter); err != nil {
 				// Early exit. Cleanup our waiter since our init process is invalid.
+
+				// BUGBUG BUGBUG Justin any ideas?
+				// If this next line is commented out, the error is written to gcs.log.
+				// However, if this next line is in, gcs terminates and you get the unexpected compute system exit from Docker returned from HCS.
+				logrus.Error(err)
+				logrus.Infof("sleeping for 30 first time.... gcs.go")
+				time.Sleep(30 * time.Second)
+				containerEntry.initProcess.setupError = err
 				containerEntry.initProcess.writersWg.Done()
+				logrus.Infof("sleeping for 30 second time.... gcs.go")
+				time.Sleep(30 * time.Second)
+
 				return -1, err
 			}
 		}
@@ -707,7 +725,7 @@ func (c *gcsCore) ResizeConsole(pid int, height, width uint16) error {
 // WaitContainer returns a function that can be used to sucessfully wait for a
 // container exit code. This will only return after all writers on WaitProcess
 // have completed. On error the container id was not a valid container.
-func (c *gcsCore) WaitContainer(id string) (func() int, error) {
+func (c *gcsCore) WaitContainer(id string) (func() (int, error), error) {
 	c.containerCacheMutex.Lock()
 	entry := c.getContainer(id)
 	if entry == nil {
@@ -716,9 +734,16 @@ func (c *gcsCore) WaitContainer(id string) (func() int, error) {
 	}
 	c.containerCacheMutex.Unlock()
 
-	f := func() int {
+	f := func() (int, error) {
+		logrus.Debugf("gcscore::WaitContainer waiting on init process waitgroup")
 		entry.initProcess.writersWg.Wait()
-		return entry.initProcess.exitCode
+		logrus.Debugf("gcscore::WaitContainer init process waitgroup count has dropped to zero")
+
+		if entry.initProcess.setupError != nil {
+			logrus.Debugf("There was an error during setup for the init process: %s", entry.initProcess.setupError)
+		}
+
+		return entry.initProcess.exitCode, entry.initProcess.setupError
 	}
 
 	return f, nil
@@ -744,6 +769,7 @@ func (c *gcsCore) WaitProcess(pid int) (<-chan int, chan<- bool, error) {
 	// If we are an init process waiter increment our count for this waiter.
 	if entry.isInitProcess {
 		entry.writersSyncRoot.Lock()
+		logrus.Debugf("gcscore::WaitProcess Incrementing waitgroup as isInitProcess")
 		entry.writersWg.Add(1)
 		entry.writersSyncRoot.Unlock()
 	}
@@ -761,6 +787,7 @@ func (c *gcsCore) WaitProcess(pid int) (<-chan int, chan<- bool, error) {
 		// Wait for the exit code or the caller to stop waiting.
 		select {
 		case exitCode := <-bgExitCodeChan:
+			logrus.Debugf("gcscore::WaitProcess got an exitCode")
 			// We got an exit code tell our caller.
 			exitCodeChan <- exitCode
 
@@ -771,11 +798,13 @@ func (c *gcsCore) WaitProcess(pid int) (<-chan int, chan<- bool, error) {
 				if entry.isInitProcess {
 					entry.writersSyncRoot.Lock()
 					// Decrement this waiter
+					logrus.Debugf("gcscore::WaitProcess doneChan, isInitProcess decrementing waitgroup")
 					entry.writersWg.Done()
 					if !entry.writersCalled {
 						// Decrement the container exited waiter now that we
 						// know we have successfully written at least 1
 						// WaitProcess on the init process.
+						logrus.Debugf("gcscore::WaitProcess settings writersCalled and decrementing waitgroup")
 						entry.writersCalled = true
 						entry.writersWg.Done()
 					}
@@ -783,10 +812,12 @@ func (c *gcsCore) WaitProcess(pid int) (<-chan int, chan<- bool, error) {
 				}
 			}
 		case <-doneChan:
+			logrus.Debugf("gcscore::WaitProcess done channel")
 			// This case means that the waiter decided to stop waiting before
 			// the process had an exit code. In this case we need to cleanup
 			// just our waiter because the no response was written.
 			if entry.isInitProcess {
+				logrus.Debugf("gcscore::WaitProcess isInitProcess so decrementing waitgroup")
 				entry.writersSyncRoot.Lock()
 				entry.writersWg.Done()
 				entry.writersSyncRoot.Unlock()

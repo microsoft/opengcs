@@ -182,7 +182,9 @@ func (w *requestResponseWriter) Error(activityID string, err error) {
 
 	resp := &prot.MessageResponseBase{ActivityID: activityID}
 	setErrorForResponseBase(resp, err)
+	logrus.Errorf("bridge: Error: %s", err)
 	w.Write(resp)
+	time.Sleep(1 * time.Minute)
 }
 
 // Bridge defines the bridge client in the GCS. It acts in many
@@ -408,7 +410,7 @@ func (b *Bridge) createContainer(w ResponseWriter, r *Request) {
 		return
 	}
 
-	var exitCodeFn func() int
+	var exitCodeFn func() (int, error)
 	wasV2Config := false
 	id := request.ContainerID
 	if b.protVer >= prot.PvV4 {
@@ -426,8 +428,8 @@ func (b *Bridge) createContainer(w ResponseWriter, r *Request) {
 				w.Error(request.ActivityID, err)
 				return
 			}
-			exitCodeFn = func() int {
-				return c.Wait()
+			exitCodeFn = func() (int, error) {
+				return c.Wait(), nil
 			}
 		}
 	}
@@ -470,7 +472,7 @@ func (b *Bridge) createContainer(w ResponseWriter, r *Request) {
 	}
 
 	go func() {
-		exitCode := exitCodeFn()
+		exitCode, err := exitCodeFn()
 		notification := &prot.ContainerNotification{
 			MessageBase: &prot.MessageBase{
 				ContainerID: id,
@@ -534,22 +536,27 @@ func (b *Bridge) execProcess(w ResponseWriter, r *Request) {
 	var pid int
 	var err error
 	if params.IsExternal {
+		logrus.Debug("IsExternal Calling b.coreint.RunExternalProcess")
 		pid, err = b.coreint.RunExternalProcess(params, conSettings)
 	} else if params.SchemaVersion.Cmp(prot.SchemaVersion{Major: 2, Minor: 0}) >= 0 {
 		var c *gcspkg.Container
 		c, err = b.hostState.GetContainer(request.ContainerID)
 		if err == nil {
 			if params.OCIProcess == nil {
+				logrus.Debug("No OCI Process - calling start")
 				pid, err = c.Start(conSettings)
 			} else {
+				logrus.Debug("Have OCI Process - calling ExecProcess")
 				pid, err = c.ExecProcess(params.OCIProcess, conSettings)
 			}
 		}
 	} else {
+		logrus.Debug("Calling b.coreint.ExecProcess")
 		pid, err = b.coreint.ExecProcess(request.ContainerID, params, conSettings)
 	}
 
 	if err != nil {
+		logrus.Errorf("bridge::execProcess Error from ExecProcess: %s", err)
 		w.Error(request.ActivityID, err)
 		return
 	}

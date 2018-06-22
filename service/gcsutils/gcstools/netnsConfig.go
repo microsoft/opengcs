@@ -11,6 +11,7 @@ package main
 // output itself.
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -18,8 +19,10 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"github.com/Microsoft/opengcs/service/gcs/prot"
+	"github.com/Microsoft/opengcs/service/gcsutils/gcstools/commoncli"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"
@@ -27,8 +30,11 @@ import (
 
 func netnsConfigMain() {
 	if err := netnsConfig(); err != nil {
-		log.Fatal("netnsConfig returned: ", err)
+		log.Errorf("netnsConfig returned: %s", err)
+		fmt.Fprintf(os.Stderr, err.Error())
+		os.Exit(-1)
 	}
+	log.Info("netnsConfig succeeded")
 	os.Exit(0)
 }
 
@@ -36,8 +42,12 @@ func netnsConfig() error {
 	ifStr := flag.String("if", "", "Interface/Adapter to move/configure")
 	nspid := flag.Int("nspid", -1, "Process ID (to locate netns")
 	cfgStr := flag.String("cfg", "", "Adapter configuration (json)")
+	logArgs := commoncli.SetFlagsForLogging()
 
 	flag.Parse()
+	if err := commoncli.SetupLogging(logArgs...); err != nil {
+		return err
+	}
 	if *ifStr == "" || *nspid == -1 || *cfgStr == "" {
 		return fmt.Errorf("All three arguments must be specified")
 	}
@@ -50,7 +60,7 @@ func netnsConfig() error {
 	if a.NatEnabled {
 		log.Infof("Configure %s in %d with: %s/%d gw=%s", *ifStr, *nspid, a.AllocatedIPAddress, a.HostIPPrefixLength, a.HostIPAddress)
 	} else {
-		log.Infof("Configure %s in %s with DHCP", *ifStr, *nspid)
+		log.Infof("Configure %s in %d with DHCP", *ifStr, *nspid)
 	}
 
 	// Lock the OS Thread so we don't accidentally switch namespaces
@@ -58,11 +68,13 @@ func netnsConfig() error {
 	defer runtime.UnlockOSThread()
 
 	// Stash current network namespace away and make sure we enter it as we leave
+	log.Infof("Obtaining current namespace")
 	origNS, err := netns.Get()
 	if err != nil {
 		return fmt.Errorf("netns.Get() failed: %v", err)
 	}
 	defer origNS.Close()
+	log.Infof("Original namespace %v", origNS)
 
 	// Get a reference to the new network namespace
 	ns, err := netns.GetFromPid(*nspid)
@@ -70,6 +82,7 @@ func netnsConfig() error {
 		return fmt.Errorf("netns.GetFromPid(%d) failed: %v", *nspid, err)
 	}
 	defer ns.Close()
+	log.Infof("New network namespace from PID %d is %v", *nspid, ns)
 
 	// Get a reference to the interface and make sure it's down
 	link, err := netlink.LinkByName(*ifStr)
@@ -93,6 +106,7 @@ func netnsConfig() error {
 	}
 
 	// Re-Get a reference to the interface (it may be a different ID in the new namespace)
+	log.Infof("Getting reference to interface")
 	link, err = netlink.LinkByName(*ifStr)
 	if err != nil {
 		return fmt.Errorf("netlink.LinkByName(%s) failed: %v", *ifStr, err)
@@ -100,7 +114,9 @@ func netnsConfig() error {
 
 	// User requested non-default MTU size
 	if a.EncapOverhead != 0 {
+		log.Info("EncapOverhead non-zero, will set MTU")
 		mtu := link.Attrs().MTU - int(a.EncapOverhead)
+		log.Infof("mtu %d", mtu)
 		if err = netlink.LinkSetMTU(link, mtu); err != nil {
 			return fmt.Errorf("netlink.LinkSetMTU(%#v, %d) failed: %v", link, mtu, err)
 		}
@@ -108,6 +124,7 @@ func netnsConfig() error {
 
 	// Configure the interface
 	if a.NatEnabled {
+		log.Info("Nat enabled - configuring interface")
 		metric := 1
 		if a.EnableLowMetric {
 			metric = 500
@@ -155,14 +172,37 @@ func netnsConfig() error {
 			}
 		}
 	} else {
-		err := exec.Command(
-			"udhcpc",
-			"-q",
-			"-i", *ifStr,
-			"-s", "/sbin/udhcpc_config.script").Run()
+		log.Infof("Execing udhcpc with timeout...")
+		cmd := exec.Command("udhcpc", "-q", "-i", *ifStr, "-s", "/sbin/udhcpc_config.script")
+		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return fmt.Errorf("udhcpc failed: %v", err)
+			return fmt.Errorf("failed to get udhcpc stdout pipe")
 		}
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			return fmt.Errorf("failed to get udhcpc stderr pipe")
+		}
+
+		var bufO, bufE bytes.Buffer
+		done := make(chan error)
+		go func() {
+			bufO.ReadFrom(stdout)
+			bufE.ReadFrom(stderr)
+			done <- cmd.Wait()
+		}()
+
+		select {
+		case <-time.After(time.Duration(10 * time.Second)):
+			log.Infof("udhcpc timed out [%s:%s]", bufO.String(), bufE.String())
+			return fmt.Errorf("udhcpc timed out. Failed to get DHCP address")
+		case err := <-done:
+			if err != nil {
+				log.Infof("udhcpc failed %s [%s:%s]", err, bufO.String(), bufE.String())
+				close(done)
+				return fmt.Errorf("process failed: %s (%s)", err, bufE.String())
+			}
+		}
+		log.Infof("udhcpc succeeded %s", bufO.String())
 	}
 
 	// Add some debug logging
