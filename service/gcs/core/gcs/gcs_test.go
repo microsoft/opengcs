@@ -795,9 +795,7 @@ var _ = Describe("GCS", func() {
 						})
 						Context("the container does not already have an initial process in it", func() {
 							It("should produce an error", func() {
-								// TODO: Find a way to produce an error in this
-								// context, possibly.
-								//Expect(err).To(HaveOccurred())
+								Expect(err).To(HaveOccurred())
 							})
 						})
 					})
