@@ -68,7 +68,7 @@ func copyWithTimeout(dst io.Writer, src io.Reader, size int64, timeoutSeconds in
 	}()
 
 	var result resultType
-	timedout := time.After(time.Duration(timeoutSeconds) * time.Second)
+	timedout := time.After(timeoutSeconds * time.Second)
 
 	select {
 	case <-timedout:
