@@ -257,6 +257,7 @@ type GcsCapabilities struct {
 type GcsGuestCapabilities struct {
 	NamespaceAddRequestSupported bool `json:",omitempty"`
 	SignalProcessSupported       bool `json:",omitempty"`
+	SupportsBulkCombineLayers    bool `json:",omitempty"`
 }
 
 // MessageBase is the base type embedded in all messages sent from the HCS to
@@ -467,6 +468,10 @@ const (
 	MrtCombinedLayers = ModifyResourceType("CombinedLayers")
 	// MrtVPMemDevice is the modify resource type for VPMem devices
 	MrtVPMemDevice = ModifyResourceType("VPMemDevice")
+	// MrtBulkCombineLayers is the modify reosurce type for mounting all of the
+	// container storage layers and creating the overlay for rootfs in a single
+	// call.
+	MrtBulkCombineLayers = ModifyResourceType("BulkMap")
 )
 
 // ModifyRequestType is the type of operation to perform on a given modify
@@ -606,6 +611,12 @@ func UnmarshalContainerModifySettings(b []byte) (*ContainerModifySettings, error
 				return &request, errors.Wrap(err, "failed to unmarshal settings as CombinedLayersV2")
 			}
 			msr.Settings = cl
+		case MrtBulkCombineLayers:
+			bulkmount := &BulkCombineLayersV2{}
+			if err := commonutils.UnmarshalJSONWithHresult(msrRawSettings, &bulkmount); err != nil {
+				return &request, errors.Wrap(err, "failed to unmarshal settings as BulkCombineLayersV2")
+			}
+			msr.Settings = bulkmount
 		default:
 			return &request, errors.Errorf("invalid ResourceType '%s'", msr.ResourceType)
 		}
@@ -692,7 +703,57 @@ type Layer struct {
 type CombinedLayersV2 struct {
 	Layers            []Layer `json:",omitempty"`
 	ScratchPath       string  `json:",omitempty"`
-	ContainerRootPath string
+	ContainerRootPath string  `json:",omitempty"`
+}
+
+// ScsiMount is a modify type that is used with `MrtBulkCombineLayers` that
+// represents a SCSI location to mount.
+type ScsiMount struct {
+	// Controller is the SCSI controller number.
+	Controller uint8 `json:",omitempty"`
+	// Lun is the SCSI lun number on a given `Controller`.
+	Lun uint8 `json:",omitempty"`
+	// Writable allows this mount to have write access. This should never be
+	// true if the mount is a layer mount; should always be true if it is a
+	// scratch; and may be true if it is a passthrough mount.
+	Writable bool `json:"ro,omitempty"`
+}
+
+// PMemMount is a modify type that is used with `MrtBulkCombineLayers` that
+// represents a pmem location to mount. Currently a pmem mount is always read
+// only.
+type PMemMount struct {
+	// DeviceNumber is the `/dev/pmemN` number.
+	DeviceNumber uint32 `json:",omitempty"`
+}
+
+// Mount is the combined modify type that is used with `MrtBulkCombineLayers` that
+// represents either a SCSI or pmem device to mount.
+type Mount struct {
+	// MountPath is the container mount path that either the SCSI or pmem device
+	// should be mounted to.
+	MountPath string `json:",omitempty"`
+
+	// Scsi is the SCSI mount description. If using this option the caller MUST
+	// NOT set `PMem`.
+	Scsi *ScsiMount `json:"scsi,omitempty`
+	// PMem is the pmem mount description. If using this option the caller MUST
+	// NOT set `Scsi`.
+	PMem *PMemMount `json:"pmem,omitempty`
+}
+
+// BulkCombineLayersV2 is a modify type that is used with `MrtBulkCombineLayers`
+// that that accomplishes the entire rootfs mount in a single call. If any of
+// the layers, scratch, or overlay mount's fail the entire operation fails.
+type BulkCombineLayersV2 struct {
+	// Layers represents the read only layers that build up the base of this
+	// rootfs layer chain.
+	Layers []Mount `json:",omitempty"`
+	// Scratch represents the writable layer of the layer chain.
+	Scratch Mount `json:",omitempty"`
+	// RootfsPath specifies the rootfs location that the overlay mount should be
+	// mounted to.
+	RootfsPath string `json:",omitempty"`
 }
 
 // NetworkAdapter represents a network interface and its associated

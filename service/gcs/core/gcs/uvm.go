@@ -10,8 +10,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/Microsoft/opengcs/service/gcs/gcserr"
 	"github.com/Microsoft/opengcs/service/gcs/oslayer"
 	"github.com/Microsoft/opengcs/service/gcs/prot"
@@ -20,6 +18,7 @@ import (
 	"github.com/Microsoft/opengcs/service/gcs/transport"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // UVMContainerID is the ContainerID that will be sent on any prot.MessageBase
@@ -151,37 +150,19 @@ func (h *Host) ModifyHostSettings(settings *prot.ModifySettingRequest) error {
 	case prot.MrtMappedVirtualDisk:
 		add = func(setting interface{}) error {
 			mvd := setting.(*prot.MappedVirtualDiskV2)
-			scsiName, err := scsiControllerLunToName(h.osl, mvd.Controller, mvd.Lun)
-			if err != nil {
-				return errors.Wrapf(err, "failed to create MappedVirtualDiskV2")
-			}
-			ms := mountSpec{
-				Source:     scsiName,
-				FileSystem: defaultFileSystem,
-				Flags:      uintptr(0),
-			}
-			if mvd.ReadOnly {
-				ms.Flags |= syscall.MS_RDONLY
-				ms.Options = append(ms.Options, mountOptionNoLoad)
-			}
-			if mvd.MountPath != "" {
-				if err := h.osl.MkdirAll(mvd.MountPath, 0700); err != nil {
-					return errors.Wrapf(err, "failed to create directory for MappedVirtualDiskV2 %s", mvd.MountPath)
-				}
-				if err := ms.MountWithTimedRetry(h.osl, mvd.MountPath); err != nil {
-					return errors.Wrapf(err, "failed to mount directory for MappedVirtualDiskV2 %s", mvd.MountPath)
-				}
-			}
-			return nil
+			return h.mountScsi(mvd.MountPath, prot.ScsiMount{
+				Controller: mvd.Controller,
+				Lun:        mvd.Lun,
+				Writable:   !mvd.ReadOnly,
+			})
 		}
 		remove = func(setting interface{}) error {
 			mvd := setting.(*prot.MappedVirtualDiskV2)
-			if mvd.MountPath != "" {
-				if err := unmountPath(h.osl, mvd.MountPath, true); err != nil {
-					return errors.Wrapf(err, "failed to hot remove MappedVirtualDiskV2 path: '%s'", mvd.MountPath)
-				}
-			}
-			return h.osl.UnplugSCSIDisk(fmt.Sprintf("0:0:%d:%d", mvd.Controller, mvd.Lun))
+			return h.removeScsi(mvd.MountPath, prot.ScsiMount{
+				Controller: mvd.Controller,
+				Lun:        mvd.Lun,
+				Writable:   !mvd.ReadOnly,
+			})
 		}
 	case prot.MrtMappedDirectory:
 		add = func(setting interface{}) error {
@@ -195,13 +176,9 @@ func (h *Host) ModifyHostSettings(settings *prot.ModifySettingRequest) error {
 	case prot.MrtVPMemDevice:
 		add = func(setting interface{}) error {
 			vpd := setting.(*prot.MappedVPMemDeviceV2)
-			ms := &mountSpec{
-				Source:     "/dev/pmem" + strconv.FormatUint(uint64(vpd.DeviceNumber), 10),
-				FileSystem: defaultFileSystem,
-				Flags:      syscall.MS_RDONLY,
-				Options:    []string{mountOptionNoLoad, mountOptionDax},
-			}
-			return mountLayer(h.osl, vpd.MountPath, ms)
+			return h.mountPmem(vpd.MountPath, prot.PMemMount{
+				DeviceNumber: vpd.DeviceNumber,
+			})
 		}
 		remove = func(setting interface{}) error {
 			vpd := setting.(*prot.MappedVPMemDeviceV2)
@@ -239,6 +216,11 @@ func (h *Host) ModifyHostSettings(settings *prot.ModifySettingRequest) error {
 			cl := setting.(*prot.CombinedLayersV2)
 			return unmountPath(h.osl, cl.ContainerRootPath, true)
 		}
+	case prot.MrtBulkCombineLayers:
+		add = func(setting interface{}) error {
+			bcl := setting.(*prot.BulkCombineLayersV2)
+			return h.bulkCombineLayers(bcl)
+		}
 	default:
 		return errors.Errorf("the resource type \"%s\" is not supported", settings.ResourceType)
 	}
@@ -247,6 +229,131 @@ func (h *Host) ModifyHostSettings(settings *prot.ModifySettingRequest) error {
 		return errors.Wrapf(err, "Failed to modify ResourceType: \"%s\"", settings.ResourceType)
 	}
 	return nil
+}
+
+func (h *Host) bulkCombineLayers(bcl *prot.BulkCombineLayersV2) (err error) {
+	var (
+		mountedLayers []prot.Mount
+		layerPaths    []string
+		upperdirPath  string
+		workdirPath   string
+		mountOptions  uintptr
+	)
+	if bcl.RootfsPath == "" {
+		return errors.New("cannot bulk combine layers with empty rootfs")
+	}
+	defer func() {
+		if err != nil {
+			for _, ml := range mountedLayers {
+				h.removeLayer(ml)
+			}
+		}
+	}()
+	// TODO: No need to do this sync.
+	for _, m := range bcl.Layers {
+		if err = h.mountLayer(m); err != nil {
+			return err
+		}
+		layerPaths = append(layerPaths, m.MountPath)
+	}
+	if bcl.Scratch.MountPath == "" {
+		// The user did not pass a scratch path. Mount overlay as readonly.
+		mountOptions |= syscall.O_RDONLY
+	} else {
+		if err = h.mountScratch(bcl.Scratch); err != nil {
+			return err
+		}
+		defer func() {
+			if err != nil {
+				h.removeLayer(bcl.Scratch)
+			}
+		}()
+		upperdirPath = filepath.Join(bcl.Scratch.MountPath, "upper")
+		workdirPath = filepath.Join(bcl.Scratch.MountPath, "work")
+	}
+	return mountOverlay(h.osl, layerPaths, upperdirPath, workdirPath, bcl.RootfsPath, mountOptions)
+}
+
+func (h *Host) mountLayer(m prot.Mount) error {
+	if m.MountPath == "" {
+		return errors.New("failed to mount layer with empty mount path")
+	}
+	if (m.Scsi == nil && m.PMem == nil) ||
+		(m.Scsi != nil && m.PMem != nil) {
+		return errors.New("failed to mount layer must specify exactly one of `Scsi` or `PMem`")
+	} else if m.Scsi != nil {
+		if m.Scsi.Writable {
+			return errors.New("failed to mount SCSI layer must not be `Writable`")
+		}
+		return h.mountScsi(m.MountPath, *m.Scsi)
+	}
+
+	return h.mountPmem(m.MountPath, *m.PMem)
+}
+
+func (h *Host) removeLayer(m prot.Mount) error {
+	if m.Scsi != nil {
+		return h.removeScsi(m.MountPath, *m.Scsi)
+	}
+	return unmountPath(h.osl, m.MountPath, true)
+}
+
+// mountScratch mounts a scratch mount to the mount path requested.
+//
+// It is the callers responsibility to check for m.MountPath != "" before
+// calling this function.
+func (h *Host) mountScratch(m prot.Mount) error {
+	if m.PMem != nil {
+		return errors.New("failed to mount scratch, pmem mount not currently supported")
+	}
+	if m.Scsi == nil {
+		return errors.New("failed to mount scratch, no scsi mount provided")
+	}
+	return h.mountScsi(m.MountPath, *m.Scsi)
+}
+
+func (h *Host) mountScsi(mountPath string, s prot.ScsiMount) error {
+	scsiName, err := scsiControllerLunToName(h.osl, s.Controller, s.Lun)
+	if err != nil {
+		return errors.Wrapf(err, "failed to mount SCSI")
+	}
+	ms := mountSpec{
+		Source:     scsiName,
+		FileSystem: defaultFileSystem,
+		Flags:      uintptr(0),
+	}
+	if !s.Writable {
+		ms.Flags |= syscall.MS_RDONLY
+		ms.Options = append(ms.Options, mountOptionNoLoad)
+	}
+	if mountPath != "" {
+		if err := h.osl.MkdirAll(mountPath, 0700); err != nil {
+			return errors.Wrapf(err, "failed to create directory for SCSI mount %s", mountPath)
+		}
+		if err := ms.MountWithTimedRetry(h.osl, mountPath); err != nil {
+			return errors.Wrapf(err, "failed to mount directory for SCSI mount %s", mountPath)
+		}
+	}
+	return nil
+}
+
+func (h *Host) removeScsi(mountPath string, s prot.ScsiMount) error {
+	if mountPath != "" {
+		if err := unmountPath(h.osl, mountPath, true); err != nil {
+			return errors.Wrapf(err, "failed to remove SCSI mount path: '%s'", mountPath)
+		}
+	}
+	return h.osl.UnplugSCSIDisk(fmt.Sprintf("0:0:%d:%d", s.Controller, s.Lun))
+}
+
+func (h *Host) mountPmem(mountPath string, p prot.PMemMount) error {
+	ms := &mountSpec{
+		Source:     "/dev/pmem" + strconv.FormatUint(uint64(p.DeviceNumber), 10),
+		FileSystem: defaultFileSystem,
+		Flags:      syscall.MS_RDONLY,
+		Options:    []string{mountOptionNoLoad, mountOptionDax},
+	}
+	return mountLayer(h.osl, mountPath, ms)
 }
 
 // Shutdown terminates this UVM. This is a destructive call and will destroy all

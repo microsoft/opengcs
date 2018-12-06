@@ -42,7 +42,8 @@ var capabilities = prot.GcsCapabilities{
 	},
 	RuntimeOsType: prot.OsTypeLinux,
 	GuestDefinedCapabilities: prot.GcsGuestCapabilities{
-		SignalProcessSupported: true,
+		SignalProcessSupported:    true,
+		SupportsBulkCombineLayers: true,
 	},
 }
 
