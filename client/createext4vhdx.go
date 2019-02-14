@@ -10,7 +10,6 @@ import (
 	"time"
 
 	winio "github.com/Microsoft/go-winio/vhd"
-	//	"github.com/Microsoft/hcsshim"
 	"github.com/sirupsen/logrus"
 )
 
