@@ -10,7 +10,7 @@ import (
 	"github.com/docker/docker/pkg/archive"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Microsoft/opengcs/service/gcsutils/libvhd2tar"
+	"github.com/microsoft/opengcs/service/gcsutils/libvhd2tar"
 )
 
 // SetFlagsForVHD2TarLib creates the command line flags for the vhd2tar

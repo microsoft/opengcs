@@ -2,7 +2,7 @@
 .NOTES
     Summary: Simple wrapper to build a local initrd.img and rootfs.tar.gz from sources and optionally install it.
 
-    License: See https://github.com/Microsoft/opengcs/blob/master/LICENSE
+    License: See https://github.com/microsoft/opengcs/blob/master/LICENSE
 
 .Parameter Install
     Installs the built initrd.img and rootfs.tar.gz
@@ -48,7 +48,7 @@ Try {
         Throw "failed to build"
     }
 
-    Write-Host -ForegroundColor Yellow "INFO: If you would like a rootfs.vhd use github.com/Microsoft/hcsshim/cmd/tar2ext4:`n`ttar2ext4.exe -i rootfs.tar.gz -o rootfs.vhd -vhd"
+    Write-Host -ForegroundColor Yellow "INFO: If you would like a rootfs.vhd use github.com/microsoft/hcsshim/cmd/tar2ext4:`n`ttar2ext4.exe -i rootfs.tar.gz -o rootfs.vhd -vhd"
 
     if ($Install) {
         if (Test-Path "C:\Program Files\Linux Containers\initrd.img" -PathType Leaf) {

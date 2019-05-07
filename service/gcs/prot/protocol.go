@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/Microsoft/opengcs/service/libs/commonutils"
+	"github.com/microsoft/opengcs/service/libs/commonutils"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 )

@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/Microsoft/opengcs/service/gcs/runtime/runc"
-	"github.com/Microsoft/opengcs/service/gcs/transport"
+	"github.com/microsoft/opengcs/service/gcs/runtime/runc"
+	"github.com/microsoft/opengcs/service/gcs/transport"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

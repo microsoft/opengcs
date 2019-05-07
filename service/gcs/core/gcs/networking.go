@@ -7,9 +7,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/Microsoft/opengcs/internal/network"
-	"github.com/Microsoft/opengcs/service/gcs/prot"
-	"github.com/Microsoft/opengcs/service/gcs/runtime"
+	"github.com/microsoft/opengcs/internal/network"
+	"github.com/microsoft/opengcs/service/gcs/prot"
+	"github.com/microsoft/opengcs/service/gcs/runtime"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

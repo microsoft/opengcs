@@ -4,8 +4,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/Microsoft/opengcs/service/gcsutils/gcstools/commoncli"
-	"github.com/Microsoft/opengcs/service/gcsutils/libvhd2tar"
+	"github.com/microsoft/opengcs/service/gcsutils/gcstools/commoncli"
+	"github.com/microsoft/opengcs/service/gcsutils/libvhd2tar"
 	"github.com/sirupsen/logrus"
 )
 

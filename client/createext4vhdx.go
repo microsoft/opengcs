@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	winio "github.com/Microsoft/go-winio/vhd"
-	//	"github.com/Microsoft/hcsshim"
+	winio "github.com/microsoft/go-winio/vhd"
+	//	"github.com/microsoft/hcsshim"
 	"github.com/sirupsen/logrus"
 )
 

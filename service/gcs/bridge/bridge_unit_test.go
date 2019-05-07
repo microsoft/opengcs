@@ -10,9 +10,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Microsoft/opengcs/service/gcs/gcserr"
-	"github.com/Microsoft/opengcs/service/gcs/prot"
-	"github.com/Microsoft/opengcs/service/gcs/transport"
+	"github.com/microsoft/opengcs/service/gcs/gcserr"
+	"github.com/microsoft/opengcs/service/gcs/prot"
+	"github.com/microsoft/opengcs/service/gcs/transport"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

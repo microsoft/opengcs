@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Microsoft/opengcs/internal/runtime/hcsv2"
-	"github.com/Microsoft/opengcs/service/gcs/core/mockcore"
-	"github.com/Microsoft/opengcs/service/gcs/prot"
+	"github.com/microsoft/opengcs/internal/runtime/hcsv2"
+	"github.com/microsoft/opengcs/service/gcs/core/mockcore"
+	"github.com/microsoft/opengcs/service/gcs/prot"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )

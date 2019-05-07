@@ -20,8 +20,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Microsoft/opengcs/service/gcs/prot"
-	"github.com/Microsoft/opengcs/service/gcsutils/gcstools/commoncli"
+	"github.com/microsoft/opengcs/service/gcs/prot"
+	"github.com/microsoft/opengcs/service/gcsutils/gcstools/commoncli"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"

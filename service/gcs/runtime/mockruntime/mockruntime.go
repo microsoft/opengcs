@@ -5,8 +5,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Microsoft/opengcs/service/gcs/runtime"
-	"github.com/Microsoft/opengcs/service/gcs/stdio"
+	"github.com/microsoft/opengcs/service/gcs/runtime"
+	"github.com/microsoft/opengcs/service/gcs/stdio"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 )
 

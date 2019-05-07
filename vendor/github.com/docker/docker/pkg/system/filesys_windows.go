@@ -11,7 +11,7 @@ import (
 	"time"
 	"unsafe"
 
-	winio "github.com/Microsoft/go-winio"
+	winio "github.com/microsoft/go-winio"
 	"golang.org/x/sys/windows"
 )
 

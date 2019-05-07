@@ -19,7 +19,7 @@
     // src/github.com/Microsoft par of the path is required
     mkdir -p $GOPATH/src/github.com/Microsoft
     cd $GOPATH/src/github.com/Microsoft
-    git clone https://github.com/Microsoft/opengcs.git opengcs
+    git clone https://github.com/microsoft/opengcs.git opengcs
 
 # Build GCS binaries
 
@@ -31,5 +31,5 @@
     ls bin
 
     eg: On a successful build, you would get the following binaries
-    root@ubuntu:~/golang/src/github.com/Microsoft/opengcs/service# ls  bin
+    root@ubuntu:~/golang/src/github.com/microsoft/opengcs/service# ls  bin
     exportSandbox  gcs  gcstools  vhd2tar netnscfg

@@ -5,7 +5,7 @@
 # It can be used on a Windows machine running in LCOW mode.
 #
 # Manual steps:
-#   git clone https://github.com/Microsoft/opengcs c:\go\src\github.com\Microsoft\opengcs
+#   git clone https://github.com/microsoft/opengcs c:\go\src\github.com\Microsoft\opengcs
 #   cd c:\go\src\github.com\Microsoft\opengcs
 #   docker build --platform=linux -t opengcs .
 #   docker run --rm -v c:\target:/build/out opengcs
@@ -17,7 +17,7 @@ FROM linuxkit/runc:069d5cd3cc4f0aec70e4af53aed5d27a21c79c35 AS runc
 FROM busybox AS busybox
 
 FROM golang:1.12.4-alpine3.9
-ENV GOPATH=/go PATH=$PATH:/go/bin SRC=/go/src/github.com/Microsoft/opengcs
+ENV GOPATH=/go PATH=$PATH:/go/bin SRC=/go/src/github.com/microsoft/opengcs
 WORKDIR /build
 RUN \
     # Create all the directories

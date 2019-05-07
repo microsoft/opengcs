@@ -7,8 +7,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Microsoft/opengcs/service/gcs/gcserr"
-	"github.com/Microsoft/opengcs/service/gcs/runtime"
+	"github.com/microsoft/opengcs/service/gcs/gcserr"
+	"github.com/microsoft/opengcs/service/gcs/runtime"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
 )

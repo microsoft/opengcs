@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Microsoft/opengcs/internal/runtime/hcsv2"
-	"github.com/Microsoft/opengcs/service/gcs/bridge"
-	"github.com/Microsoft/opengcs/service/gcs/core/gcs"
-	"github.com/Microsoft/opengcs/service/gcs/runtime/runc"
-	"github.com/Microsoft/opengcs/service/gcs/transport"
+	"github.com/microsoft/opengcs/internal/runtime/hcsv2"
+	"github.com/microsoft/opengcs/service/gcs/bridge"
+	"github.com/microsoft/opengcs/service/gcs/core/gcs"
+	"github.com/microsoft/opengcs/service/gcs/runtime/runc"
+	"github.com/microsoft/opengcs/service/gcs/transport"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )

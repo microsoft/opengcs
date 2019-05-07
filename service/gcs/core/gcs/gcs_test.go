@@ -3,10 +3,10 @@ package gcs
 import (
 	"fmt"
 
-	"github.com/Microsoft/opengcs/service/gcs/prot"
-	"github.com/Microsoft/opengcs/service/gcs/runtime/mockruntime"
-	"github.com/Microsoft/opengcs/service/gcs/stdio"
-	"github.com/Microsoft/opengcs/service/gcs/transport"
+	"github.com/microsoft/opengcs/service/gcs/prot"
+	"github.com/microsoft/opengcs/service/gcs/runtime/mockruntime"
+	"github.com/microsoft/opengcs/service/gcs/stdio"
+	"github.com/microsoft/opengcs/service/gcs/transport"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	oci "github.com/opencontainers/runtime-spec/specs-go"

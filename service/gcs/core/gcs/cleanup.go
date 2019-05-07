@@ -1,8 +1,8 @@
 package gcs
 
 import (
-	"github.com/Microsoft/opengcs/internal/storage"
-	"github.com/Microsoft/opengcs/service/gcs/runtime"
+	"github.com/microsoft/opengcs/internal/storage"
+	"github.com/microsoft/opengcs/service/gcs/runtime"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )

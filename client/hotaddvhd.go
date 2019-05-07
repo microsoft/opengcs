@@ -5,7 +5,7 @@ package client
 import (
 	"fmt"
 
-	"github.com/Microsoft/hcsshim"
+	"github.com/microsoft/hcsshim"
 	"github.com/sirupsen/logrus"
 )
 

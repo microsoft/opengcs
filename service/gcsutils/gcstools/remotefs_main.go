@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Microsoft/opengcs/service/gcsutils/gcstools/commoncli"
-	"github.com/Microsoft/opengcs/service/gcsutils/remotefs"
+	"github.com/microsoft/opengcs/service/gcsutils/gcstools/commoncli"
+	"github.com/microsoft/opengcs/service/gcsutils/remotefs"
 	"github.com/sirupsen/logrus"
 )
 

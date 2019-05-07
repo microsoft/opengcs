@@ -5,8 +5,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Microsoft/opengcs/service/gcs/prot"
-	"github.com/Microsoft/opengcs/service/gcs/stdio"
+	"github.com/microsoft/opengcs/service/gcs/prot"
+	"github.com/microsoft/opengcs/service/gcs/stdio"
 	"github.com/pkg/errors"
 )
 
