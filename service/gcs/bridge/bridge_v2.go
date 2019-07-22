@@ -283,7 +283,11 @@ func (b *Bridge) signalContainerV2(ctx context.Context, span *trace.Span, r *Req
 func (b *Bridge) signalProcessV2(r *Request) (_ RequestResponse, err error) {
 	ctx, span := trace.StartSpan(r.Context, "opengcs::bridge::signalProcessV2")
 	defer span.End()
-	defer func() { oc.SetSpanStatus(span, err) }()
+	defer func() {
+		if !gcserr.IsNotFound(err) {
+			oc.SetSpanStatus(span, err)
+		}
+	}()
 	span.AddAttributes(
 		trace.StringAttribute("activityID", r.ActivityID),
 		trace.StringAttribute("cid", r.ContainerID))

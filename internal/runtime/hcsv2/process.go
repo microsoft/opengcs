@@ -108,7 +108,11 @@ func newProcess(c *Container, spec *oci.Process, process runtime.Process, pid ui
 func (p *Process) Kill(ctx context.Context, signal syscall.Signal) (err error) {
 	_, span := trace.StartSpan(ctx, "opengcs::Process::Kill")
 	defer span.End()
-	defer func() { oc.SetSpanStatus(span, err) }()
+	defer func() {
+		if !gcserr.IsNotFound(err) {
+			oc.SetSpanStatus(span, err)
+		}
+	}()
 	span.AddAttributes(
 		trace.StringAttribute("cid", p.cid),
 		trace.Int64Attribute("pid", int64(p.pid)),

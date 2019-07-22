@@ -39,6 +39,13 @@ const (
 	HrVmcomputeUnknownMessage = Hresult(-1070137077) // 0xC037010B
 )
 
+// IsNotFound returns `true` if `err` is either `HrErrNotFound` or
+// `HrVmcomputeSystemNotFound`.
+func IsNotFound(err error) bool {
+	hr, _ := GetHresult(err)
+	return hr == HrErrNotFound || hr == HrVmcomputeSystemNotFound
+}
+
 // StackTracer is an interface originating (but not exported) from the
 // github.com/pkg/errors package. It defines something which can return a stack
 // trace.
