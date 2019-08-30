@@ -266,6 +266,7 @@ type GcsGuestCapabilities struct {
 	NamespaceAddRequestSupported bool `json:",omitempty"`
 	SignalProcessSupported       bool `json:",omitempty"`
 	DumpStacksSupported          bool `json:",omitempty"`
+	LogicalVolumeSupported       bool `json:",omitempty"`
 }
 
 // ocspancontext is the internal JSON representation of the OpenCensus
@@ -508,6 +509,8 @@ const (
 	MrtVPMemDevice = ModifyResourceType("VPMemDevice")
 	// MrtNetwork is the modify resource type for the `NetworkAdapterV2` device.
 	MrtNetwork = ModifyResourceType("Network")
+	// MrtLogicalVolume is the modify resource type for the `LogicalVolume` type.
+	MrtLogicalVolume = ModifyResourceType("LogicalVolume")
 )
 
 // ModifyRequestType is the type of operation to perform on a given modify
@@ -653,6 +656,11 @@ func UnmarshalContainerModifySettings(b []byte) (*ContainerModifySettings, error
 				return &request, errors.Wrap(err, "failed to unmarshal settings as NetworkAdapterV2")
 			}
 			msr.Settings = na
+		case MrtLogicalVolume:
+			lv := &LogicalVolume{}
+			if err := commonutils.UnmarshalJSONWithHresult(msrRawSettings, lv); err != nil {
+				return &request, errors.Wrap(err, "failed to unmarshal settings as LogicalVolume")
+			}
 		default:
 			return &request, errors.Errorf("invalid ResourceType '%s'", msr.ResourceType)
 		}
@@ -931,4 +939,12 @@ type PropertyQuery struct {
 // Properties represents the properties of a compute system.
 type Properties struct {
 	ProcessList []ProcessDetails `json:",omitempty"`
+}
+
+// LogicalVolume represents a logical volume that is created on top of a set of
+// physical devices.
+type LogicalVolume struct {
+	ID        string
+	MountPath string
+	Devices   []MappedVirtualDiskV2
 }

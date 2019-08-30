@@ -35,6 +35,7 @@ var capabilities = prot.GcsCapabilities{
 		NamespaceAddRequestSupported: true,
 		SignalProcessSupported:       true,
 		DumpStacksSupported:          true,
+		LogicalVolumeSupported:       true,
 	},
 }
 

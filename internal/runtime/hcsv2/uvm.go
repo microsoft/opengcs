@@ -180,6 +180,8 @@ func (h *Host) ModifyHostSettings(ctx context.Context, settings *prot.ModifySett
 		return modifyCombinedLayers(ctx, settings.RequestType, settings.Settings.(*prot.CombinedLayersV2))
 	case prot.MrtNetwork:
 		return modifyNetwork(ctx, settings.RequestType, settings.Settings.(*prot.NetworkAdapterV2))
+	case prot.MrtLogicalVolume:
+		return modifyLogicalVolume(ctx, settings.RequestType, settings.Settings.(*prot.LogicalVolume))
 	default:
 		return errors.Errorf("the ResourceType \"%s\" is not supported", settings.ResourceType)
 	}
@@ -281,6 +283,23 @@ func modifyNetwork(ctx context.Context, rt prot.ModifyRequestType, na *prot.Netw
 			return err
 		}
 		return nil
+	default:
+		return newInvalidRequestTypeError(rt)
+	}
+}
+
+func modifyLogicalVolume(ctx context.Context, rt prot.ModifyRequestType, na *prot.LogicalVolume) error {
+	switch rt {
+	case prot.MreqtAdd:
+		// TODO: Create LVM from devices
+		return errors.New("not implemented")
+	case prot.MreqtUpdate:
+		// TODO: Append devices and expand LVM
+		return errors.New("not implemented")
+	case prot.MreqtRemove:
+		// TODO: Remove LVM
+		// TODO: SCSI device handled already or should we eject?
+		return errors.New("not implemented")
 	default:
 		return newInvalidRequestTypeError(rt)
 	}
