@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Microsoft/opengcs/internal/kmsg"
 	"github.com/Microsoft/opengcs/internal/oc"
 	"github.com/Microsoft/opengcs/internal/runtime/hcsv2"
 	"github.com/Microsoft/opengcs/service/gcs/bridge"
@@ -19,6 +20,45 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.opencensus.io/trace"
 )
+
+func kmsgLoop() {
+	f, err := os.Open("/dev/kmsg")
+	if err != nil {
+		logrus.WithError(err).Error("failed to open kmsg")
+		return
+	}
+	// /dev/kmsg never returns EOF, so we just sit in the loop waiting for more
+	// log entries forever.
+	for {
+		// Buffer size from CONSOLE_EXT_LOG_MAX	in Linux's printk.h.
+		b := [8192]byte{}
+		n, err := f.Read(b[:])
+		if err != nil {
+			logrus.WithError(err).Error("kmsg read failure")
+		} else {
+			line := string(b[:n])
+			ke, err := kmsg.Parse(line)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					logrus.ErrorKey: err,
+					"line":          line,
+				}).Error("kmsg read failure")
+			} else {
+				// Currently we don't alter the logrus level based on the
+				// syslogPriority level, as it wasn't clear if that would add
+				// a lot of noise.
+				logrus.WithFields(logrus.Fields{
+					"syslogPriority":     ke.SyslogPriority,
+					"syslogFacility":     ke.SyslogFacility,
+					"seq":                ke.Seq,
+					"timeSinceBootMicro": ke.TimeSinceBootMicro,
+					"flags":              ke.Flags,
+					"message":            ke.Message,
+				}).Info("kmsg read")
+			}
+		}
+	}
+}
 
 func main() {
 	logLevel := flag.String("loglevel", "debug", "Logging Level: debug, info, warning, error, fatal, panic.")
@@ -81,6 +121,10 @@ func main() {
 	baseStoragePath := "/run/gcs/c"
 
 	logrus.Info("GCS started")
+
+	// Start a goroutine to read the kernel log ring buffer and log it out.
+	go kmsgLoop()
+
 	tport := &transport.VsockTransport{}
 	rtime, err := runc.NewRuntime(baseLogPath)
 	if err != nil {
