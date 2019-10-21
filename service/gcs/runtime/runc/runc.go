@@ -546,6 +546,7 @@ func (c *container) startProcess(tempProcessDir string, hasTerminal bool, stdioS
 	}
 
 	logPath := c.r.getLogPath(c.id)
+	args = append([]string{"--log-format", "json"}, args...)
 	args = append([]string{"--log", logPath}, args...)
 
 	args = append(args, "--pid-file", filepath.Join(tempProcessDir, "pid"))
@@ -587,7 +588,15 @@ func (c *container) startProcess(tempProcessDir string, hasTerminal bool, stdioS
 	}
 
 	if err := cmd.Run(); err != nil {
-		return nil, errors.Wrapf(err, "failed to run runc create/exec call for container %s", c.id)
+		b, readErr := ioutil.ReadFile(logPath)
+		if readErr != nil {
+			return nil, errors.Wrapf(readErr, "failed to read runc log for runc create/exec call failure for container %s", c.id)
+		}
+		var result map[string]interface{}
+		if unmarshalErr := json.Unmarshal(b, &result); unmarshalErr != nil {
+			return nil, errors.Wrapf(unmarshalErr, "failed to unmarshal runc log for runc create/exec call failure for container %s", c.id)
+		}
+		return nil, errors.Wrapf(err, "failed to run runc create/exec call for container %s: %v", c.id, result["msg"])
 	}
 
 	var ttyRelay *stdio.TtyRelay
