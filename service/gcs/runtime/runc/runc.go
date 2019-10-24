@@ -122,11 +122,18 @@ func (r *runcRuntime) CreateContainer(id string, bundlePath string, stdioSet *st
 // CreateContainer.
 func (c *container) Start() error {
 	logPath := c.r.getLogPath(c.id)
-	cmd := exec.Command("runc", "--log", logPath, "start", c.id)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "start", c.id)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		lastErr := runcLogReader.getLastError()
 		c.r.cleanupContainer(c.id)
-		return errors.Wrapf(err, "runc start failed with: %s", out)
+		return errors.Wrapf(err, "runc start failed with %v: %s", lastErr, string(out))
 	}
 	return nil
 }
@@ -149,6 +156,14 @@ func (c *container) Kill(signal syscall.Signal) error {
 		args = append(args, "--all")
 	}
 	args = append(args, c.id, strconv.Itoa(int(signal)))
+	args = append([]string{"--log-format", "json"}, args...)
+
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
 	cmd := exec.Command("runc", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -157,7 +172,8 @@ func (c *container) Kill(signal syscall.Signal) error {
 			err == syscall.ESRCH {
 			return gcserr.NewHresultError(gcserr.HrVmcomputeSystemNotFound)
 		}
-		return errors.Wrapf(err, "unknown runc error after kill: %s", string(out))
+		lastErr := runcLogReader.getLastError()
+		return errors.Wrapf(err, "unknown runc error after kill %v: %s", lastErr, string(out))
 	}
 	return nil
 }
@@ -166,10 +182,17 @@ func (c *container) Kill(signal syscall.Signal) error {
 // runC itself.
 func (c *container) Delete() error {
 	logPath := c.r.getLogPath(c.id)
-	cmd := exec.Command("runc", "--log", logPath, "delete", c.id)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "delete", c.id)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.Wrapf(err, "runc delete failed with: %s", out)
+		lastErr := runcLogReader.getLastError()
+		return errors.Wrapf(err, "runc delete failed with %v: %s", lastErr, string(out))
 	}
 	if err := c.r.cleanupContainer(c.id); err != nil {
 		return err
@@ -189,10 +212,17 @@ func (p *process) Delete() error {
 // Pause suspends all processes running in the container.
 func (c *container) Pause() error {
 	logPath := c.r.getLogPath(c.id)
-	cmd := exec.Command("runc", "--log", logPath, "pause", c.id)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "pause", c.id)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.Wrapf(err, "runc pause failed with: %s", out)
+		lastErr := runcLogReader.getLastError()
+		return errors.Wrapf(err, "runc pause failed with %v: %s", lastErr, string(out))
 	}
 	return nil
 }
@@ -200,10 +230,17 @@ func (c *container) Pause() error {
 // Resume unsuspends processes running in the container.
 func (c *container) Resume() error {
 	logPath := c.r.getLogPath(c.id)
-	cmd := exec.Command("runc", "--log", logPath, "resume", c.id)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "resume", c.id)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.Wrapf(err, "runc resume failed with: %s", out)
+		lastErr := runcLogReader.getLastError()
+		return errors.Wrapf(err, "runc resume failed with %v: %s", lastErr, string(out))
 	}
 	return nil
 }
@@ -211,10 +248,17 @@ func (c *container) Resume() error {
 // GetState returns information about the given container.
 func (c *container) GetState() (*runtime.ContainerState, error) {
 	logPath := c.r.getLogPath(c.id)
-	cmd := exec.Command("runc", "--log", logPath, "state", c.id)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "state", c.id)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, errors.Wrapf(err, "runc state failed with: %s", out)
+		lastErr := runcLogReader.getLastError()
+		return nil, errors.Wrapf(err, "runc state failed with %v: %s", lastErr, string(out))
 	}
 	var state runtime.ContainerState
 	if err := json.Unmarshal(out, &state); err != nil {
@@ -246,10 +290,17 @@ func (c *container) Exists() (bool, error) {
 // containers, whether they're running or not.
 func (r *runcRuntime) ListContainerStates() ([]runtime.ContainerState, error) {
 	logPath := filepath.Join(r.runcLogBasePath, "global-runc.log")
-	cmd := exec.Command("runc", "--log", logPath, "list", "-f", "json")
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "list", "-f", "json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, errors.Wrapf(err, "runc list failed with: %s", out)
+		lastErr := runcLogReader.getLastError()
+		return nil, errors.Wrapf(err, "runc list failed with %v: %s", lastErr, string(out))
 	}
 	var states []runtime.ContainerState
 	if err := json.Unmarshal(out, &states); err != nil {
@@ -354,10 +405,17 @@ func (c *container) GetAllProcesses() ([]runtime.ContainerProcessState, error) {
 // running.
 func (r *runcRuntime) getRunningPids(id string) ([]int, error) {
 	logPath := r.getLogPath(id)
-	cmd := exec.Command("runc", "--log", logPath, "ps", "-f", "json", id)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
+
+	cmd := exec.Command("runc", "--log", logPath, "--log-format", "json", "ps", "-f", "json", id)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, errors.Wrapf(err, "runc ps failed with: %s", out)
+		lastErr := runcLogReader.getLastError()
+		return nil, errors.Wrapf(err, "runc ps failed with %v: %s", lastErr, string(out))
 	}
 	var pids []int
 	if err := json.Unmarshal(out, &pids); err != nil {
@@ -546,8 +604,14 @@ func (c *container) startProcess(tempProcessDir string, hasTerminal bool, stdioS
 	}
 
 	logPath := c.r.getLogPath(c.id)
-	args = append([]string{"--log", logPath}, args...)
+	runcLogReader, err := newLogReader(logPath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create runc log reader")
+	}
+	go runcLogReader.startRead()
 
+	args = append([]string{"--log-format", "json"}, args...)
+	args = append([]string{"--log", logPath}, args...)
 	args = append(args, "--pid-file", filepath.Join(tempProcessDir, "pid"))
 
 	var sockListener *net.UnixListener
@@ -587,7 +651,8 @@ func (c *container) startProcess(tempProcessDir string, hasTerminal bool, stdioS
 	}
 
 	if err := cmd.Run(); err != nil {
-		return nil, errors.Wrapf(err, "failed to run runc create/exec call for container %s", c.id)
+		lastErr := runcLogReader.getLastError()
+		return nil, errors.Wrapf(err, "failed to run runc create/exec call for container %s with %v", c.id, lastErr)
 	}
 
 	var ttyRelay *stdio.TtyRelay
