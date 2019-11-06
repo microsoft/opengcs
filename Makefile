@@ -18,10 +18,7 @@ SRCROOT=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 # The link aliases for gcstools
 GCS_TOOLS=\
-	vhd2tar \
-	exportSandbox \
-	netnscfg \
-	remotefs
+	netnscfg
 
 .PHONY: all always rootfs test
 
@@ -32,8 +29,8 @@ clean:
 	rm -rf bin deps rootfs out
 
 test:
-	cd $(SRCROOT) && go test ./service/gcsutils/...
-	cd $(SRCROOT)/service/gcs && ginkgo -r -keepGoing
+	go test $(SRCROOT)/internal/...
+	go test $(SRCROOT)/service/...
 
 out/delta.tar.gz: bin/init bin/vsockexec bin/service/gcs bin/service/gcsutils/gcstools Makefile
 	@mkdir -p out

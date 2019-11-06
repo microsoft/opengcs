@@ -35,10 +35,7 @@ RUN \
     \
     # Grab udhcpc_config.script
     curl -fSL "https://raw.githubusercontent.com/mirror/busybox/38d966943f5288bb1f2e7219f50a92753c730b14/examples/udhcp/simple.script" -o /target/sbin/udhcpc_config.script && \
-    chmod ugo+rx /target/sbin/udhcpc_config.script && \
-    \
-    # Install gingko for testing
-    go get github.com/onsi/ginkgo/ginkgo
+    chmod ugo+rx /target/sbin/udhcpc_config.script
 
 COPY --from=runc / /target/
 COPY --from=runc /usr/bin/runc /usr/bin/

@@ -3,10 +3,6 @@
 
 Open Guest Compute Service is a Linux open source project to further the development of a production quality implementation of Linux Hyper-V container on Windows (LCOW).  It's designed to run inside a custom Linux OS for supporting Linux container payload.
 
-# Getting Started
-
-[How to build GCS binaries](./docs/gcsbuildinstructions.md/)
-
 # LCOW v1 (deprecated)
 
 The original version of `LCOW v1` was designed to run directly through `Docker` against the `HCS` (Host Compute Service) on Windows. This workflow is no longer supported by this repository however it has not been intentionally broken. If you would like to continue to use `LCOW v1` there is a branch `lcow_v1` that is the LKG branch previous to the removal of `LCOW v1` from the `master` branchline. All future efforts are focused on `LCOW v2`.

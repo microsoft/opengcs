@@ -223,7 +223,6 @@ type ProtocolVersion uint32
 // Protocol versions.
 const (
 	PvInvalid ProtocolVersion = 0
-	PvV3      ProtocolVersion = 3
 	PvV4      ProtocolVersion = 4
 	PvMax     ProtocolVersion = PvV4
 )
