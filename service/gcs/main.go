@@ -26,7 +26,8 @@ func main() {
 	logFormat := flag.String("log-format", "text", "Logging Format: text or json")
 	useInOutErr := flag.Bool("use-inouterr", false, "If true use stdin/stdout for bridge communication and stderr for logging")
 	v4 := flag.Bool("v4", false, "enable the v4 protocol support and v2 schema")
-	rootMemReserveBytes := flag.Uint64("root-mem-reserve-bytes", 75*1024*1024, "the amount of memory reserved for the orchestration, the rest will be assigned to containers")
+	rootMemReserveBytes := flag.Uint64("root-mem-reserve-bytes", 60*1024*1024, "the amount of memory reserved for the root, the rest will be assigned to containers")
+	gcsMemReserveBytes := flag.Uint64("gcs-mem-reserve-bytes", 50*1024*1024, "the amount of memory reserved for the gcs ontop of the root-mem-reserve-bytes")
 	gcsMemLimitBytes := flag.Uint64("gcs-mem-limit-bytes", 50*1024*1024, "the maximum amount of memory the gcs can use")
 
 	flag.Usage = func() {
@@ -77,6 +78,10 @@ func main() {
 
 	logrus.SetLevel(level)
 
+	if *gcsMemLimitBytes < *gcsMemReserveBytes {
+		logrus.Fatal("opengcs::main - gcs-mem-limit-bytes cannot be less than gcs-mem-reserve-bytes")
+	}
+
 	baseLogPath := "/run/gcs/c"
 	baseStoragePath := "/run/gcs/c"
 
@@ -117,16 +122,16 @@ func main() {
 	// memory and causing the GCS to malfunction we create two cgroups: gcs,
 	// containers.
 	//
-	// The containers cgroup is limited only by {Totalram - 75 MB
-	// (reservation)}.
+	// The containers cgroup is limited only by {Totalram -
+	// {rootMemReserveBytes} - {gcsMemReserveBytes}.
 	//
-	// The gcs cgroup is limited to 50 MB to prevent unknown memory leaks over
-	// time from affecting workload memory.
+	// The gcs cgroup is limited to {gcsMemLimitBytes} to prevent unknown memory
+	// leaks over time from affecting workload memory.
 	sinfo := syscall.Sysinfo_t{}
 	if err := syscall.Sysinfo(&sinfo); err != nil {
 		logrus.WithError(err).Fatal("opengcs::main - failed to get sys info")
 	}
-	containersLimit := int64(sinfo.Totalram - *rootMemReserveBytes)
+	containersLimit := int64(sinfo.Totalram - *rootMemReserveBytes - *gcsMemReserveBytes)
 	containersControl, err := cgroups.New(cgroups.V1, cgroups.StaticPath("/containers"), &oci.LinuxResources{
 		Memory: &oci.LinuxMemory{
 			Limit: &containersLimit,
@@ -136,10 +141,21 @@ func main() {
 		logrus.WithError(err).Fatal("opengcs::main - failed to create containers cgroup")
 	}
 	defer containersControl.Delete()
-	gcsLimit := int64(*gcsMemLimitBytes)
+
+	var gcsLimit *int64
+	if *gcsMemLimitBytes > 0 {
+		l := int64(*gcsMemLimitBytes)
+		gcsLimit = &l
+	}
+	var gcsReservation *int64
+	if *gcsMemReserveBytes > 0 {
+		r := int64(*gcsMemReserveBytes)
+		gcsReservation = &r
+	}
 	gcsControl, err := cgroups.New(cgroups.V1, cgroups.StaticPath("/gcs"), &oci.LinuxResources{
 		Memory: &oci.LinuxMemory{
-			Limit: &gcsLimit,
+			Limit:       gcsLimit,
+			Reservation: gcsReservation,
 		},
 	})
 	if err != nil {
