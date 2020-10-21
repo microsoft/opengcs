@@ -53,6 +53,11 @@ func Mount(ctx context.Context, layerPaths []string, upperdirPath, workdirPath, 
 
 	options := []string{"lowerdir=" + lowerdir}
 	if upperdirPath != "" {
+		if _, err := os.Stat(upperdirPath); err == nil {
+			// Upperdir already exists. This means we're using the scratch space from
+			// another container. Create a new upper dir with a unique name for this container.
+			upperdirPath += "-" + generateID()
+		}
 		if err := osMkdirAll(upperdirPath, 0755); err != nil {
 			return errors.Wrap(err, "failed to create upper directory in scratch space")
 		}
@@ -64,6 +69,11 @@ func Mount(ctx context.Context, layerPaths []string, upperdirPath, workdirPath, 
 		options = append(options, "upperdir="+upperdirPath)
 	}
 	if workdirPath != "" {
+		if _, err := os.Stat(workdirPath); err == nil {
+			// Workdir already exists. This means we're using the scratch space from
+			// another container. Create a new work dir with a unique name for this container.
+			workdirPath += "-" + generateID()
+		}
 		if err := osMkdirAll(workdirPath, 0755); err != nil {
 			return errors.Wrap(err, "failed to create workdir in scratch space")
 		}
