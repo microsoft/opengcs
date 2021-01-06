@@ -74,13 +74,14 @@ func Mount(ctx context.Context, device uint32, target string) (err error) {
 	//
 	// For example, for /dev/pmem9 we create a /tmp/hash9 and a mapped device /dev/mapper/verity9
 	// then when we mount we mount /dev/mapper/verity9 on target rather than mount /dev/pmem9 there.
+	// Eventually we may cache the merkle tree to avoid the cost in time here.
 
-	// make this device > 0 if you find the UVM fails to boot and you need to look at the log in /tmp
+	// make this compare device > 0 if you find the UVM fails to boot and you need to look at the log in /tmp
 	if device >= 0 {
 		/*
-			This is how the veritysetup command makes a hash tree on, in this case /tmp/hashes.img
+			This is how the veritysetup command makes a hash tree on, in this case /tmp/hashes7
 
-			C:\ContainerPlat>shimdiag exec k8 veritysetup format /dev/pmem7 /tmp/hashes.img
+			C:\ContainerPlat>shimdiag exec k8 veritysetup format /dev/pmem7 /tmp/hashes7
 			VERITY header information for /tmp/hashes.img
 			UUID:                   286b6abe-dc96-41d4-9d6b-8ceef55e5e62
 			Hash type:              1
@@ -91,8 +92,8 @@ func Mount(ctx context.Context, device uint32, target string) (err error) {
 			Salt:                   523b54cb9f2aefe307cfcba25e1df8581fb76f28dda7c61bea9377853e56bac4
 			Root hash:              0391a02dc3fcd5a62ef3cc9fd7248c073c2f188156564cf2728497eecd69cb50
 		*/
-		// TODO - solve the salt question
-		formatArgs := fmt.Sprintf("format --data-block-size=%s --data-blocks=%s /dev/pmem%d /tmp/hash%d", blockSize, blockCount, device, device)
+		// Use a salt of zero so as to obtain a repeatable and so verifyable root hash
+		formatArgs := fmt.Sprintf("format --salt=0000000000000000000000000000000000000000000000000000000000000000 --data-block-size=%s --data-blocks=%s /dev/pmem%d /tmp/hash%d", blockSize, blockCount, device, device)
 
 		hashInfo := []string{"Root hash:"} // we want to extract the generated root hash to pass to the next step
 		hashAnswers, verityFormatErr := shell.ShellOutWithResults(ctx, "/usr/sbin/veritysetup", formatArgs, hashInfo, true)
