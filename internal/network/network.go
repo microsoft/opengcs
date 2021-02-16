@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/Microsoft/opengcs/internal/oc"
 	"github.com/Microsoft/opengcs/internal/storage/vmbus"
 	"github.com/pkg/errors"
+	"github.com/vishvananda/netns"
 	"go.opencensus.io/trace"
 )
 
@@ -142,4 +144,27 @@ func InstanceIDToName(ctx context.Context, id string) (_ string, err error) {
 	ifname := deviceDirs[0].Name()
 	log.G(ctx).WithField("ifname", ifname).Debug("resolved ifname")
 	return ifname, nil
+}
+
+// DoInNetNS is a utility to run a function `work` inside of a specific network namespace
+// `ns`. This is accomplished by locking the current goroutines thread to prevent the goroutine
+// from being scheduled to a new thread during execution of `work`. The threads network namespace
+// will be rejoined on exit.
+func DoInNetNS(ns netns.NsHandle, work func() error) error {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	origNs, err := netns.Get()
+	if err != nil {
+		return errors.Wrap(err, "failed to get current network namespace")
+	}
+	defer origNs.Close()
+
+	if err := netns.Set(ns); err != nil {
+		return errors.Wrapf(err, "failed to set network namespace to %v", ns)
+	}
+	// Defer so we can re-enter the threads original netns on exit.
+	defer netns.Set(origNs)
+
+	return work()
 }

@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/Microsoft/opengcs/internal/storage"
+	"github.com/Microsoft/opengcs/internal/storage/cifs"
+	"github.com/Microsoft/opengcs/internal/storage/loopback"
 	"github.com/Microsoft/opengcs/internal/storage/overlay"
 	"github.com/Microsoft/opengcs/internal/storage/pci"
 	"github.com/Microsoft/opengcs/internal/storage/plan9"
@@ -201,6 +203,10 @@ func (h *Host) modifyHostSettings(ctx context.Context, containerID string, setti
 		return modifyMappedDirectory(ctx, h.vsock, settings.RequestType, settings.Settings.(*prot.MappedDirectoryV2))
 	case prot.MrtVPMemDevice:
 		return modifyMappedVPMemDevice(ctx, settings.RequestType, settings.Settings.(*prot.MappedVPMemDeviceV2))
+	case prot.MrtLoopbackDevice:
+		return modifyLoopbackDevice(ctx, settings.RequestType, settings.Settings.(*prot.LoopbackDeviceV2))
+	case prot.MrtCifsMount:
+		return modifyCifsMount(ctx, settings.RequestType, settings.Settings.(*prot.CifsMountV2))
 	case prot.MrtCombinedLayers:
 		return modifyCombinedLayers(ctx, settings.RequestType, settings.Settings.(*prot.CombinedLayersV2))
 	case prot.MrtNetwork:
@@ -387,6 +393,31 @@ func modifyMappedVPMemDevice(ctx context.Context, rt prot.ModifyRequestType, vpd
 		return pmem.Mount(ctx, vpd.DeviceNumber, vpd.MountPath)
 	case prot.MreqtRemove:
 		return storage.UnmountPath(ctx, vpd.MountPath, true)
+	default:
+		return newInvalidRequestTypeError(rt)
+	}
+}
+
+func modifyLoopbackDevice(ctx context.Context, rt prot.ModifyRequestType, lb *prot.LoopbackDeviceV2) error {
+	switch rt {
+	case prot.MreqtAdd:
+		return loopback.Mount(ctx, int(lb.DeviceNumber), lb.MountPath, lb.BackingFile)
+	case prot.MreqtRemove:
+		if err := storage.UnmountPath(ctx, lb.MountPath, true); err != nil {
+			return errors.Wrapf(err, "failed to unmount loop device mount path %s", lb.MountPath)
+		}
+		return loopback.RemoveBackingFile(ctx, int(lb.DeviceNumber))
+	default:
+		return newInvalidRequestTypeError(rt)
+	}
+}
+
+func modifyCifsMount(ctx context.Context, rt prot.ModifyRequestType, c *prot.CifsMountV2) error {
+	switch rt {
+	case prot.MreqtAdd:
+		return cifs.Mount(ctx, c.Source, c.MountPath, c.Username, c.Password)
+	case prot.MreqtRemove:
+		return storage.UnmountPath(ctx, c.MountPath, true)
 	default:
 		return newInvalidRequestTypeError(rt)
 	}

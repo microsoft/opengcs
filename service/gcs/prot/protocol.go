@@ -513,6 +513,10 @@ const (
 	MrtCombinedLayers = ModifyResourceType("CombinedLayers")
 	// MrtVPMemDevice is the modify resource type for VPMem devices
 	MrtVPMemDevice = ModifyResourceType("VPMemDevice")
+	// MrtLoopbackDevice is the modify resource type for loopback devices
+	MrtLoopbackDevice = ModifyResourceType("LoopbackDevice")
+	// MrtCifsMount is the modify resource type for cifs mounts
+	MrtCifsMount = ModifyResourceType("CifsMount")
 	// MrtNetwork is the modify resource type for the `NetworkAdapterV2` device.
 	MrtNetwork = ModifyResourceType("Network")
 	// MrtVPCIDevice is the modify resource type for vpci devices
@@ -594,6 +598,18 @@ func UnmarshalContainerModifySettings(b []byte) (*ContainerModifySettings, error
 			return &request, errors.Wrap(err, "failed to unmarshal hosted settings as MappedVPMemDeviceV2")
 		}
 		msr.Settings = vpd
+	case MrtLoopbackDevice:
+		lbd := &LoopbackDeviceV2{}
+		if err := commonutils.UnmarshalJSONWithHresult(msrRawSettings, lbd); err != nil {
+			return &request, errors.Wrap(err, "failed to unmarshal hosted settings as LoopbackDeviceV2")
+		}
+		msr.Settings = lbd
+	case MrtCifsMount:
+		cm := &CifsMountV2{}
+		if err := commonutils.UnmarshalJSONWithHresult(msrRawSettings, cm); err != nil {
+			return &request, errors.Wrap(err, "failed to unmarshal hosted settings as CifsMountV2")
+		}
+		msr.Settings = cm
 	case MrtCombinedLayers:
 		cl := &CombinedLayersV2{}
 		if err := commonutils.UnmarshalJSONWithHresult(msrRawSettings, cl); err != nil {
@@ -788,6 +804,22 @@ type MappedDirectoryV2 struct {
 type MappedVPMemDeviceV2 struct {
 	DeviceNumber uint32 `json:",omitempty"`
 	MountPath    string `json:",omitempty"`
+}
+
+// LoopbackDeviceV2 represents a loopback device being asked to get created within
+// the guest. This request assumes `BackingFile` exists in the guest.
+type LoopbackDeviceV2 struct {
+	DeviceNumber uint32 `json:",omitempty"`
+	MountPath    string `json:",omitempty"`
+	BackingFile  string `json:",omitempty"`
+}
+
+//CifsMountV2 represents a cifs mount to be mounted in the guest.
+type CifsMountV2 struct {
+	Source    string `json:",omitempty"`
+	MountPath string `json:",omitempty"`
+	Username  string `json:",omitempty"`
+	Password  string `json:",omitempty"`
 }
 
 type MappedVPCIDeviceV2 struct {
