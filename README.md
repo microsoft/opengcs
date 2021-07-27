@@ -1,3 +1,6 @@
+# Archived
+
+This project has been archived. Its contents have been merged into [Microsoft/hcsshim](https://github.com/microsoft/hcsshim) where development will continue. Some code organization has changed as part of the merge, please see [the merge PR](https://github.com/microsoft/hcsshim/pull/973) for details on where things have moved. Any issues regarding opengcs should be opened on the hcsshim repo.
 
 # Open Guest Compute Service (opengcs) [![Build Status](https://github.com/microsoft/opengcs/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/opengcs/actions/workflows/ci.yml)
 
