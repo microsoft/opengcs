@@ -6,7 +6,7 @@ Changes:
 * Everything in /internal has been moved to [github.com/Microsoft/hcsshim/internal/guest](https://github.com/microsoft/hcsshim/tree/master/internal/guest) besides a few redundant packages that had equivalents in hcsshim. These include /internal/debug, /internal/oc and /internal/log. These are now located at github.com/Microsoft/hcsshim/internal/debug, github.com/Microsoft/hcsshim/internal/oc, and github.com/Microsoft/hcsshim/internal/log.
 * /service/libs/commonutils has moved to github.com/Microsoft/hcsshim/internal/guest.
 * Any non Go code lives at the root of github.com/Microsoft/hcsshim now, just as it did in this repository. This includes /vsockexec, /init, and /hack.
-* The main gcs and gcstools binaries are now built and located at github.com/Microsoft/hcsshim/cmd/gcs and  github.com/Microsoft/hcsshim/cmd/gcstools. 
+* The main gcs and gcstools binaries are now built and located at github.com/Microsoft/hcsshim/cmd/gcs and github.com/Microsoft/hcsshim/cmd/gcstools. 
 * Makefile lives top level at github.com/Microsoft/hcsshim/Makefile and same commands will work to build everything.
 
 # Open Guest Compute Service (opengcs) [![Build Status](https://github.com/microsoft/opengcs/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/opengcs/actions/workflows/ci.yml)
